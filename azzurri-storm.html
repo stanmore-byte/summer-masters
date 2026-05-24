@@ -217,6 +217,46 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 .jug-lb-name{flex:1;font-size:.83em;font-weight:700}
 .jug-lb-pr{font-size:.8em;font-weight:800;color:#FFD700}
 .jug-lb-days{font-size:.7em;color:rgba(255,255,255,.35);margin-left:4px}
+
+/* ── DAY STRIP ── */
+.day-strip{display:flex;gap:5px;margin-bottom:12px}
+.day-bubble{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 2px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .15s;min-width:0}
+.day-bubble.today{border-color:rgba(255,215,0,.45);background:rgba(255,215,0,.07)}
+.day-bubble.selected{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.1)}
+.day-bubble.future{opacity:.28;pointer-events:none}
+.day-bubble-lbl{font-size:.58em;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,.38)}
+.day-bubble.today .day-bubble-lbl{color:#FFD700}
+.day-bubble.selected .day-bubble-lbl{color:#fff}
+.day-bubble-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:.55em;font-weight:900;transition:all .15s}
+.day-bubble.complete .day-bubble-dot{background:#27ae60;border-color:#27ae60;color:#fff}
+.day-bubble.partial .day-bubble-dot{background:rgba(255,193,7,.3);border-color:rgba(255,193,7,.55);color:rgba(255,193,7,.9)}
+.day-viewing-label{font-size:.72em;color:rgba(255,255,255,.35);text-align:center;margin-bottom:10px;font-weight:600}
+.day-viewing-label span{color:rgba(255,255,255,.7)}
+.day-readonly .daily-item{pointer-events:none;opacity:.7}
+/* streak */
+.streak-bar{display:flex;align-items:center;gap:10px;padding:9px 13px;background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.3);border-radius:10px;margin-bottom:12px}
+.streak-fire{font-size:1.3em}
+.streak-num{font-size:1.15em;font-weight:900;color:#FF8C00}
+.streak-lbl{font-size:.75em;color:rgba(255,255,255,.45);flex:1}
+.streak-best{font-size:.68em;color:rgba(255,140,0,.5)}
+/* juggling team card */
+.jug-team-today{font-size:.68em;padding:2px 7px;border-radius:5px;font-weight:700;background:rgba(255,215,0,.12);color:#FFD700;margin-left:4px}
+
+/* ── PLAYER PROFILE EDITOR ── */
+.profile-editor{display:none;padding:10px 14px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.08)}
+.profile-editor.open{display:block}
+.profile-editor-title{font-size:.7em;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px}
+.profile-fields{display:flex;gap:8px;align-items:flex-end}
+.profile-field{flex:1;display:flex;flex-direction:column;gap:4px}
+.profile-field label{font-size:.67em;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.profile-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:.9em;padding:7px 10px;outline:none;width:100%;box-sizing:border-box}
+.profile-input:focus{border-color:rgba(255,215,0,.5)}
+.profile-save-btn{background:rgba(255,215,0,.18);border:1px solid rgba(255,215,0,.4);color:#FFD700;font-weight:800;font-size:.78em;padding:7px 13px;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s}
+.profile-save-btn:hover{background:rgba(255,215,0,.32)}
+.profile-edit-btn{background:none;border:none;color:rgba(255,255,255,.3);font-size:.85em;cursor:pointer;padding:2px 6px;transition:color .15s;flex-shrink:0}
+.profile-edit-btn:hover{color:rgba(255,255,255,.7)}
+.lb-jersey{font-size:.68em;font-weight:800;background:rgba(255,255,255,.1);color:rgba(255,255,255,.55);padding:1px 5px;border-radius:4px;margin-right:4px}
+.lb-realname{font-size:.72em;color:rgba(255,255,255,.32);font-weight:400;margin-left:3px}
 </style>
 </head>
 <body>
@@ -245,7 +285,22 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
       <div class="ah-sub" id="ah-sub"></div>
     </div>
     <button class="btn-ghost" onclick="goSelect()">Change Player</button>
+    <button class="profile-edit-btn" onclick="toggleProfileEditor()" title="Edit profile">✏️</button>
   </header>
+  <div id="profile-editor" class="profile-editor">
+    <div class="profile-editor-title">My Profile</div>
+    <div class="profile-fields">
+      <div class="profile-field">
+        <label>Nickname</label>
+        <input class="profile-input" id="prof-nickname" type="text" maxlength="16" placeholder="e.g. Rocket" />
+      </div>
+      <div class="profile-field" style="max-width:90px">
+        <label>Jersey #</label>
+        <input class="profile-input" id="prof-number" type="text" maxlength="4" placeholder="10" />
+      </div>
+      <button class="profile-save-btn" onclick="saveProfileData()">Save</button>
+    </div>
+  </div>
 
   <nav class="tab-bar">
     <div class="tab-btn active" onclick="switchTab('training',this)">MY TRAINING</div>
@@ -450,22 +505,54 @@ const STRENGTH = [
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function getDailyKey(n){return STORE_KEY+'_d_'+n.replace(/\s+/g,'_');}
 function getJugKey(n){return STORE_KEY+'_j_'+n.replace(/\s+/g,'_');}
-function getDailyData(n){
-  try{var d=JSON.parse(localStorage.getItem(getDailyKey(n))||'{}');var t=todayStr();return d.date===t?d:{date:t,bs:[],st:[]};}
-  catch(e){return{date:todayStr(),bs:[],st:[]};}
+function getDailyHistory(n){
+  try{return JSON.parse(localStorage.getItem(getDailyKey(n))||'{}');}
+  catch(e){return{};}
 }
-function saveDailyData(n,d){localStorage.setItem(getDailyKey(n),JSON.stringify(d));}
+function getDayData(n,ds){var h=getDailyHistory(n);return h[ds]||{bs:[],st:[]};}
+function saveDayData(n,ds,data){var h=getDailyHistory(n);h[ds]=data;localStorage.setItem(getDailyKey(n),JSON.stringify(h));}
+function isDayComplete(n,ds){var d=getDayData(n,ds);return d.bs.length===BALL_SKILLS.length&&d.st.length===STRENGTH.length;}
+function isDayPartial(n,ds){var d=getDayData(n,ds);return(d.bs.length+d.st.length)>0&&!isDayComplete(n,ds);}
+function getStreak(n){
+  var streak=0;var d=new Date();
+  for(var i=0;i<100;i++){
+    var ds=new Date(d.getTime()-i*86400000).toISOString().split('T')[0];
+    if(isDayComplete(n,ds))streak++;else break;
+  }
+  return streak;
+}
+function getBestStreak(n){
+  var h=getDailyHistory(n);var dates=Object.keys(h).sort();
+  var best=0;var cur=0;var prev=null;
+  dates.forEach(function(ds){
+    if(isDayComplete(n,ds)){
+      if(prev){var diff=(new Date(ds)-new Date(prev))/(1000*86400);cur=diff<=1?cur+1:1;}
+      else{cur=1;}
+      if(cur>best)best=cur;prev=ds;
+    }else{cur=0;prev=null;}
+  });
+  return best;
+}
+function getWeekDays(){
+  var now=new Date();var day=now.getDay();
+  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));mon.setHours(0,0,0,0);
+  var days=[];
+  for(var i=0;i<7;i++){var d=new Date(mon);d.setDate(mon.getDate()+i);days.push(d.toISOString().split('T')[0]);}
+  return days;
+}
+function selectDay(ds){state.selDay=ds;renderDailyModules();}
 function getJugData(n){
   try{return JSON.parse(localStorage.getItem(getJugKey(n))||'{"pr":0,"log":[]}');}
   catch(e){return{pr:0,log:[]};}
 }
 function saveJugData(n,d){localStorage.setItem(getJugKey(n),JSON.stringify(d));}
 function toggleDailyItem(type,id){
-  var d=getDailyData(state.current);
+  var ds=state.selDay||todayStr();
+  var d=getDayData(state.current,ds);
   var arr=type==='bs'?d.bs:d.st;
   var idx=arr.indexOf(id);
   if(idx>-1)arr.splice(idx,1);else arr.push(id);
-  saveDailyData(state.current,d);
+  saveDayData(state.current,ds,d);
   renderDailyModules();
 }
 function toggleDailyPanel(id){
@@ -501,73 +588,104 @@ function jugglingDaysThisWeek(n){
 function renderDailyModules(){
   var el=document.getElementById('daily-modules');
   if(!el)return;
-  var d=getDailyData(state.current);
+  var today=todayStr();
+  if(!state.selDay)state.selDay=today;
+  var selDay=state.selDay;
+  var d=getDayData(state.current,selDay);
   var jd=getJugData(state.current);
-  var t=todayStr();
-  var todayJug=jd.log.find(function(e){return e.date===t;});
+  var todayJug=jd.log.find(function(e){return e.date===today;});
   var daysThisWeek=jugglingDaysThisWeek(state.current);
+  var streak=getStreak(state.current);
+  var bestStreak=getBestStreak(state.current);
+  var weekDays=getWeekDays();
+  var dayLabels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var isToday=selDay===today;
+  var isFutureDay=selDay>today;
   var bsDone=d.bs.length;var bsTotal=BALL_SKILLS.length;
   var stDone=d.st.length;var stTotal=STRENGTH.length;
+
+  // Day strip
+  var strip='<div class="day-strip">';
+  weekDays.forEach(function(ds,i){
+    var fut=ds>today;
+    var comp=isDayComplete(state.current,ds);
+    var part=isDayPartial(state.current,ds);
+    var cls='day-bubble'+(ds===today?' today':'')+(ds===selDay?' selected':'')+(fut?' future':'')+(comp?' complete':part?' partial':'');
+    strip+='<div class="'+cls+'" onclick="selectDay(\''+ds+'\')"><span class="day-bubble-lbl">'+dayLabels[i]+'</span><div class="day-bubble-dot">'+(comp?'&#10003;':part?'&middot;':'')+'</div></div>';
+  });
+  strip+='</div>';
+
+  // Streak bar
+  var streakHtml='';
+  if(streak>0||bestStreak>0){
+    streakHtml='<div class="streak-bar"><span class="streak-fire">🔥</span><span class="streak-num">'+streak+'</span><span class="streak-lbl"> day streak</span>'+(bestStreak>streak?'<span class="streak-best">Best: '+bestStreak+'</span>':'')+'</div>';
+  }
+
+  // Viewing label
+  var dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var selDate=new Date(selDay+'T12:00:00');
+  var status=isDayComplete(state.current,selDay)?' — ✅ Complete':isDayPartial(state.current,selDay)?' — ⚡ Partial':' — nothing logged';
+  var viewLbl=isToday?'<div class="day-viewing-label"><span>Today</span></div>':'<div class="day-viewing-label">Viewing <span>'+dayNames[selDate.getDay()]+', '+selDay+'</span>'+(isFutureDay?' — not yet':status)+'</div>';
+
+  // Ball skills items
   var bsItems=BALL_SKILLS.map(function(item){
     var done=d.bs.indexOf(item.id)>-1;
-    return '<div class="daily-item'+(done?' done':'')+'" onclick="toggleDailyItem(\'bs\',\''+item.id+'\')"><div class="daily-cb"><div class="daily-cb-inner"></div></div><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>';
+    var click=!isFutureDay?' onclick="toggleDailyItem(\'bs\',\''+item.id+'\')"':'';
+    return '<div class="daily-item'+(done?' done':'')+'"'+click+'><div class="daily-cb"><div class="daily-cb-inner"></div></div><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>';
   }).join('');
+
+  // Strength items
   var stItems=STRENGTH.map(function(item){
     var done=d.st.indexOf(item.id)>-1;
-    return '<div class="daily-item'+(done?' done':'')+'" onclick="toggleDailyItem(\'st\',\''+item.id+'\')"><div class="daily-cb"><div class="daily-cb-inner"></div></div><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>';
+    var click=!isFutureDay?' onclick="toggleDailyItem(\'st\',\''+item.id+'\')"':'';
+    return '<div class="daily-item'+(done?' done':'')+'"'+click+'><div class="daily-cb"><div class="daily-cb-inner"></div></div><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>';
   }).join('');
-  var recentLog=jd.log.slice(0,6).map(function(e){
+
+  // Juggling log rows
+  var recentLog=jd.log.slice(0,5).map(function(e){
     var isPR=e.count===jd.pr&&jd.pr>0;
     return '<div class="jug-log-row'+(isPR?' jug-log-pr':'')+'"><span>'+e.date+'</span><span>'+e.count+(isPR?' 🏆':'')+'</span></div>';
   }).join('');
-  el.innerHTML=
-    '<div class="daily-section"><div class="daily-hdr" id="bs-panel-hdr" onclick="toggleDailyPanel(\'bs-panel\')"><div class="daily-hdr-left"><span class="daily-hdr-icon">⚽</span><span class="daily-hdr-title">Ball Skills</span><span class="daily-hdr-prog">'+bsDone+'/'+bsTotal+'</span></div><span class="daily-hdr-arrow">▼</span></div><div class="daily-body" id="bs-panel">'+bsItems+'</div></div>'
-    +'<div class="daily-section"><div class="daily-hdr" id="st-panel-hdr" onclick="toggleDailyPanel(\'st-panel\')"><div class="daily-hdr-left"><span class="daily-hdr-icon">💪</span><span class="daily-hdr-title">Strength Training</span><span class="daily-hdr-prog">'+stDone+'/'+stTotal+'</span></div><span class="daily-hdr-arrow">▼</span></div><div class="daily-body" id="st-panel">'+stItems+'</div></div>'
-    +'<div class="jug-section"><div class="jug-hdr"><span class="daily-hdr-icon">🎯</span><span class="jug-hdr-title">Juggling</span>'+(jd.pr>0?'<span class="jug-pr-badge">PR: '+jd.pr+'</span>':'')+'</div><div class="jug-input-row"><input class="jug-input" id="jug-input" type="number" min="1" placeholder="Today\'s count" /><button class="jug-btn" onclick="logJuggling()">Log it</button></div>'+(recentLog?'<div class="jug-log">'+recentLog+'</div>':'')+'<div class="jug-goal">Goal: juggle '+daysThisWeek+'/5 days this week'+(todayJug?' · Today: '+todayJug.count:'')+'</div></div>';
+
+  var bsPanel='<div class="daily-section"><div class="daily-hdr" id="bs-panel-hdr" onclick="toggleDailyPanel(\'bs-panel\')"><div class="daily-hdr-left"><span class="daily-hdr-icon">⚽</span><span class="daily-hdr-title">Ball Skills</span><span class="daily-hdr-prog">'+bsDone+'/'+bsTotal+'</span></div><span class="daily-hdr-arrow">▼</span></div><div class="daily-body" id="bs-panel">'+bsItems+'</div></div>';
+  var stPanel='<div class="daily-section"><div class="daily-hdr" id="st-panel-hdr" onclick="toggleDailyPanel(\'st-panel\')"><div class="daily-hdr-left"><span class="daily-hdr-icon">💪</span><span class="daily-hdr-title">Strength Training</span><span class="daily-hdr-prog">'+stDone+'/'+stTotal+'</span></div><span class="daily-hdr-arrow">▼</span></div><div class="daily-body" id="st-panel">'+stItems+'</div></div>';
+  var jugPanel=isToday?'<div class="jug-section"><div class="jug-hdr"><span class="daily-hdr-icon">🎯</span><span class="jug-hdr-title">Juggling</span>'+(jd.pr>0?'<span class="jug-pr-badge">PR: '+jd.pr+'</span>':'')+'</div><div class="jug-input-row"><input class="jug-input" id="jug-input" type="number" min="1" placeholder="Today\'s count" /><button class="jug-btn" onclick="logJuggling()">Log it</button></div>'+(recentLog?'<div class="jug-log">'+recentLog+'</div>':'')+'<div class="jug-goal">Goal: juggle '+daysThisWeek+'/5 days this week'+(todayJug?' · Today: '+todayJug.count:'')+'</div></div>':'';
+
+  el.innerHTML=strip+streakHtml+viewLbl+bsPanel+stPanel+jugPanel;
 }
-const DRILL_VIDEOS = {
-  1:'https://vimeo.com/1044047062/0310362d37?share=copy',
-  2:'https://vimeo.com/1044047173/34ef3b4f37?share=copy',
-  3:'https://vimeo.com/1044047248/eb2605c69c?share=copy',
-  4:'https://vimeo.com/1044047288/ae9914e16c?share=copy',
-  5:'https://vimeo.com/1044047341/aac40091c3?share=copy',
-  6:'https://vimeo.com/1044047399/22c6159f6f?share=copy',
-  7:'https://vimeo.com/1044047467/2e5c558edc?share=copy',
-  8:'https://vimeo.com/1044047513/13c3d73b25?share=copy',
-  9:'https://vimeo.com/1044047603/f87e13b3c6?share=copy',
-  10:'https://vimeo.com/1044047664/7d7a44a89f?share=copy',
-  11:'https://vimeo.com/1044047715/352c933b44?share=copy',
-  12:'https://vimeo.com/1044047793/30f00bd98a?share=copy',
-  13:'https://vimeo.com/1044047840/53e2f0758e?share=copy',
-  14:'https://vimeo.com/1044047888/82ad256ce6?share=copy',
-  15:'https://vimeo.com/1044047929/f073f62e54?share=copy',
-  16:'https://vimeo.com/1044048133/283c8ca464?share=copy',
-  17:'https://vimeo.com/1044048270/90728db45e?share=copy',
-  18:'https://vimeo.com/1044048427/5e6a0b2c1c?share=copy',
-  19:'https://vimeo.com/1044048497/b3d2d48583?share=copy',
-  20:'https://vimeo.com/1044048544/fc7d7e4a34?share=copy',
-  21:'https://vimeo.com/1044048574/78933c47af?share=copy',
-  22:'https://vimeo.com/1044048612/f17803d13c?share=copy',
-  23:'https://vimeo.com/1044048708/29664c63df?share=copy',
-  24:'https://vimeo.com/1044048803/f672a04308?share=copy',
-  25:'https://vimeo.com/1044048849/ae1ce2ca2f?share=copy',
-  26:'https://vimeo.com/1044048896/c369da3741?share=copy',
-  27:'https://vimeo.com/1044048929/d45585111b?share=copy',
-  28:'https://vimeo.com/1044048950/01b91691b3?share=copy',
-  29:'https://vimeo.com/1044048988/7c60d5c7d2?share=copy',
-  30:'https://vimeo.com/1044049053/901f7f2bb1?share=copy',
-  31:'https://vimeo.com/1044049080/3e2e6f39c0?share=copy',
-  32:'https://vimeo.com/1044049097/92da765d67?share=copy',
-  33:'https://vimeo.com/1044049119/648a1974e9?share=copy',
-  34:'https://vimeo.com/1044049144/a3747862dc?share=copy',
-  35:'https://vimeo.com/1044049164/2b166f9423?share=copy',
-  36:'https://vimeo.com/1044049181/2ca8964a2c?share=copy',
-  37:'https://vimeo.com/1044049211/e42263e635?share=copy',
-  38:'https://vimeo.com/1044049229/07e2d365db?share=copy',
-  39:'https://vimeo.com/1044049300/f79dbd4b09?share=copy',
-  40:'https://vimeo.com/1044049328/5e04ba2aaa?share=copy',
-  41:'https://vimeo.com/1044049363/8090a0a17e?share=copy',
-};
+
+
+function getProfileKey(n){return STORE_KEY+'_prof_'+n.replace(/\s+/g,'_');}
+function getProfile(n){
+  try{return JSON.parse(localStorage.getItem(getProfileKey(n))||'{}');}
+  catch(e){return{};}
+}
+function saveProfile(n,p){localStorage.setItem(getProfileKey(n),JSON.stringify(p));}
+function getDisplayName(n){var p=getProfile(n);return p.nickname||n;}
+function getJerseyNum(n){var p=getProfile(n);return p.number||'';}
+function toggleProfileEditor(){
+  var ed=document.getElementById('profile-editor');
+  if(!ed)return;
+  ed.classList.toggle('open');
+  if(ed.classList.contains('open')){
+    var p=getProfile(state.current);
+    var ni=document.getElementById('prof-nickname');
+    var nu=document.getElementById('prof-number');
+    if(ni)ni.value=p.nickname||'';
+    if(nu)nu.value=p.number||'';
+  }
+}
+function saveProfileData(){
+  var ni=document.getElementById('prof-nickname');
+  var nu=document.getElementById('prof-number');
+  var p=getProfile(state.current);
+  p.nickname=(ni?ni.value.trim():'');
+  p.number=(nu?nu.value.trim():'');
+  saveProfile(state.current,p);
+  updateHeader();
+  document.getElementById('profile-editor').classList.remove('open');
+  renderTeam();
+}
 function vimeoEmbed(url){
   var m = url.match(/vimeo\.com\/(\d+)\/([a-f0-9]+)/);
   if(!m) return url;
@@ -885,7 +1003,7 @@ function getDrillSVG(vis){
 //  STATE & STORAGE
 // ══════════════════════════════════════════════
 const STORE_KEY = 'azzurri_storm_v2';
-let state = { current: null, players: {} };
+let state = { current: null, players: {}, selDay: null };
 let modalDrillId = null;
 
 function loadState(){
@@ -984,7 +1102,8 @@ function updateHeader(){
   const pct = Math.round(done/41*100);
   document.getElementById('ah-av').style.background = p.color;
   document.getElementById('ah-av').textContent = p.emoji;
-  document.getElementById('ah-name').textContent = name;
+  var _jn=getJerseyNum(name);var _dn=getDisplayName(name);
+  document.getElementById('ah-name').textContent=(_jn?'#'+_jn+' ':'')+_dn;
   document.getElementById('ah-sub').textContent = done + '/41 drills · ' + pct + '% complete';
 }
 
@@ -1170,7 +1289,7 @@ function renderTeam(){
       <div class="lb-rank ${rankClass(i)}">${rankLabel(i)}</div>
       <div class="lb-av" style="background:${p.color}">${p.emoji}</div>
       <div class="lb-inf">
-        <div class="lb-name">${p.name}${isMe?'<span class="you-tag"> (you)</span>':''}</div>
+        <div class="lb-name">${getJerseyNum(p.name)?`<span class="lb-jersey">#${getJerseyNum(p.name)}</span>`:''}${getDisplayName(p.name)}${getDisplayName(p.name)!==p.name?`<span class="lb-realname">${p.name}</span>`:''}${isMe?'<span class="you-tag"> (you)</span>':''}</div>
         <div class="lb-bar-wrap"><div class="lb-bar" style="width:${barW}%;background:${p.color}"></div></div>
       </div>
       <div class="lb-num" style="color:${p.color}">${p.done}/41</div>
@@ -1185,21 +1304,27 @@ function copyMyCode(){
     showToast('Copy the code above and send to teammates!');
   });
 
+
   // Juggling leaderboard
-  var jugSorted = PLAYERS.map(function(p){
-    var jd = getJugData(p.name);
-    return {name:p.name, color:p.color, pr:jd.pr, days:jugglingDaysThisWeek(p.name)};
+  var todayStr2=todayStr();
+  var jugSorted=PLAYERS.map(function(p){
+    var jd=getJugData(p.name);
+    var todayEntry=jd.log.find(function(e){return e.date===todayStr2;});
+    return {name:p.name,color:p.color,pr:jd.pr,days:jugglingDaysThisWeek(p.name),today:todayEntry?todayEntry.count:0,streak:getStreak(p.name)};
   }).sort(function(a,b){return b.pr-a.pr;});
-  var jugHtml = '<p class="jug-lb-title">Juggling Records</p>';
-  jugHtml += jugSorted.map(function(p,i){
+  var jugHtml='<p class="jug-lb-title">Juggling Records</p>';
+  jugHtml+=jugSorted.map(function(p,i){
+    var medal=i===0?'\ud83e\udd47':i===1?'\ud83e\udd48':i===2?'\ud83e\udd49':i+1;
     return '<div class="jug-lb-row">'
-      +'<span class="jug-lb-rank">'+(i===0?'\ud83e\udd47':i===1?'\ud83e\udd48':i===2?'\ud83e\udd49':i+1)+'</span>'
+      +'<span class="jug-lb-rank">'+medal+'</span>'
       +'<div class="jug-lb-dot" style="background:'+p.color+'"></div>'
-      +'<span class="jug-lb-name">'+p.name+'</span>'
-      +(p.pr>0?'<span class="jug-lb-pr">'+p.pr+'</span><span class="jug-lb-days">'+p.days+'/5 days</span>':'<span class="jug-lb-days" style="color:rgba(255,255,255,.2)">no record yet</span>')
+      +'<span class="jug-lb-name">'+(getJerseyNum(p.name)?'<span class="lb-jersey">#'+getJerseyNum(p.name)+'</span>':'')+getDisplayName(p.name)+(getDisplayName(p.name)!==p.name?' <span class="lb-realname">'+p.name+'</span>':'')+(p.streak>1?' 🔥'+p.streak:'')+'</span>'
+      +(p.pr>0?'<span class="jug-lb-pr">'+p.pr+'</span>':'')
+      +(p.today>0?'<span class="jug-team-today">today: '+p.today+'</span>':'')
+      +'<span class="jug-lb-days" style="'+(p.pr===0?'color:rgba(255,255,255,.2)':'')+'">'+p.days+'/5</span>'
       +'</div>';
   }).join('');
-  document.getElementById('jug-lb').innerHTML = jugHtml;
+  document.getElementById('jug-lb').innerHTML=jugHtml;
 }
 
 function importCode(){
