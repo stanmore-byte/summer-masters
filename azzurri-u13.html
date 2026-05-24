@@ -171,6 +171,52 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 .em-champ{font-size:.78rem;font-weight:700;letter-spacing:.06em;color:rgba(255,215,0,.75);margin-bottom:4px}
 .em-attr{font-size:.67rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.25)}
 .em-attr em{font-style:italic;text-transform:none;letter-spacing:0}
+
+/* ── DAILY MODULES ── */
+.daily-section{margin-bottom:14px}
+.daily-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;cursor:pointer;user-select:none;transition:background .15s}
+.daily-hdr:hover{background:rgba(255,255,255,.09)}
+.daily-hdr-left{display:flex;align-items:center;gap:8px}
+.daily-hdr-icon{font-size:1.1em}
+.daily-hdr-title{font-weight:800;font-size:.88em}
+.daily-hdr-prog{font-size:.7em;color:rgba(255,255,255,.35);margin-left:4px}
+.daily-hdr-arrow{font-size:.75em;color:rgba(255,255,255,.3);transition:transform .2s}
+.daily-hdr.open .daily-hdr-arrow{transform:rotate(180deg)}
+.daily-body{display:none;padding:8px 4px 2px}
+.daily-body.open{display:block}
+.daily-item{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}
+.daily-item:last-child{border-bottom:none}
+.daily-item.done .daily-item-name{opacity:.45;text-decoration:line-through}
+.daily-cb{width:22px;height:22px;border:2px solid rgba(255,255,255,.22);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.daily-item.done .daily-cb{background:#27ae60;border-color:#27ae60}
+.daily-cb-inner{display:none;width:5px;height:9px;border:2.5px solid white;border-top:none;border-left:none;transform:rotate(45deg) translateY(-2px)}
+.daily-item.done .daily-cb-inner{display:block}
+.daily-item-name{flex:1;font-size:.86em;font-weight:600}
+.daily-item-target{font-size:.74em;color:rgba(255,255,255,.3);flex-shrink:0}
+.daily-modules-wrap{margin-bottom:6px}
+/* juggling */
+.jug-section{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:13px 14px;margin-bottom:14px}
+.jug-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.jug-hdr-title{font-weight:800;font-size:.88em;flex:1}
+.jug-pr-badge{font-size:.7em;background:rgba(255,215,0,.15);color:#FFD700;padding:2px 8px;border-radius:6px;font-weight:700}
+.jug-input-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.jug-input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:1.05em;font-weight:700;padding:7px 10px;text-align:center;-moz-appearance:textfield;outline:none}
+.jug-input::-webkit-inner-spin-button,.jug-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.jug-btn{background:rgba(255,215,0,.18);border:1px solid rgba(255,215,0,.4);color:#FFD700;font-weight:800;font-size:.8em;padding:7px 13px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:background .15s}
+.jug-btn:hover{background:rgba(255,215,0,.32)}
+.jug-log{max-height:88px;overflow-y:auto;margin-bottom:6px}
+.jug-log-row{display:flex;justify-content:space-between;font-size:.74em;padding:3px 0;color:rgba(255,255,255,.38);border-bottom:1px solid rgba(255,255,255,.04)}
+.jug-log-row:last-child{border-bottom:none}
+.jug-log-pr{color:#FFD700;font-weight:700}
+.jug-goal{font-size:.73em;color:rgba(255,255,255,.28);text-align:center}
+/* juggling leaderboard */
+.jug-lb-title{font-size:.75em;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#7fbfff;margin:18px 0 8px}
+.jug-lb-row{display:flex;align-items:center;gap:10px;padding:7px 10px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px}
+.jug-lb-rank{font-size:.8em;width:20px;text-align:center;flex-shrink:0}
+.jug-lb-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.jug-lb-name{flex:1;font-size:.83em;font-weight:700}
+.jug-lb-pr{font-size:.8em;font-weight:800;color:#FFD700}
+.jug-lb-days{font-size:.7em;color:rgba(255,255,255,.35);margin-left:4px}
 </style>
 </head>
 <body>
@@ -212,6 +258,7 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
       <div class="ob-row"><span>Overall Progress</span><span id="ob-label"></span></div>
       <div class="ob-track"><div class="ob-fill" id="ob-fill" style="width:0%"></div></div>
     </div>
+    <div id="daily-modules" class="daily-modules-wrap"></div>
     <div id="drill-list"></div>
   </div>
 
@@ -232,6 +279,7 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
     </div>
     <p class="team-section-title">Team Leaderboard</p>
     <div class="lb-list" id="lb-list"></div>
+    <div id="jug-lb"></div>
   </div>
 </div>
 
@@ -385,6 +433,100 @@ const DRILLS = [
 ];
 
 
+const BALL_SKILLS = [
+  {id:'bs1', name:'Wall-offs — Right Foot', target:'× 100'},
+  {id:'bs2', name:'Wall-offs — Left Foot',  target:'× 100'},
+  {id:'bs3', name:'Toe Touches',                target:'× 30'},
+  {id:'bs4', name:'Tic Tocs',                   target:'× 30'},
+  {id:'bs5', name:'Iniestas — Left',        target:'× 15'},
+  {id:'bs6', name:'Iniestas — Right',       target:'× 15'},
+];
+const STRENGTH = [
+  {id:'st1', name:'Push-ups',       target:'3 × 10'},
+  {id:'st2', name:'Jump Squats',    target:'3 × 10'},
+  {id:'st3', name:'Lunges',         target:'3 × 10'},
+  {id:'st4', name:'Plank',          target:'3 × 1 min'},
+  {id:'st5', name:'Sit-ups',        target:'3 × 25'},
+  {id:'st6', name:'Speedskaters',   target:'3 × 10 each foot'},
+];
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function getDailyKey(n){return STORE_KEY+'_d_'+n.replace(/\s+/g,'_');}
+function getJugKey(n){return STORE_KEY+'_j_'+n.replace(/\s+/g,'_');}
+function getDailyData(n){
+  try{var d=JSON.parse(localStorage.getItem(getDailyKey(n))||'{}');var t=todayStr();return d.date===t?d:{date:t,bs:[],st:[]};}
+  catch(e){return{date:todayStr(),bs:[],st:[]};}
+}
+function saveDailyData(n,d){localStorage.setItem(getDailyKey(n),JSON.stringify(d));}
+function getJugData(n){
+  try{return JSON.parse(localStorage.getItem(getJugKey(n))||'{"pr":0,"log":[]}');}
+  catch(e){return{pr:0,log:[]};}
+}
+function saveJugData(n,d){localStorage.setItem(getJugKey(n),JSON.stringify(d));}
+function toggleDailyItem(type,id){
+  var d=getDailyData(state.current);
+  var arr=type==='bs'?d.bs:d.st;
+  var idx=arr.indexOf(id);
+  if(idx>-1)arr.splice(idx,1);else arr.push(id);
+  saveDailyData(state.current,d);
+  renderDailyModules();
+}
+function toggleDailyPanel(id){
+  var b=document.getElementById(id);
+  var h=document.getElementById(id+'-hdr');
+  if(!b||!h)return;
+  b.classList.toggle('open');
+  h.classList.toggle('open');
+}
+function logJuggling(){
+  var inp=document.getElementById('jug-input');
+  var val=parseInt(inp.value,10);
+  if(!val||val<1)return;
+  var d=getJugData(state.current);
+  var t=todayStr();
+  d.log=d.log.filter(function(e){return e.date!==t;});
+  d.log.unshift({date:t,count:val});
+  if(val>d.pr)d.pr=val;
+  saveJugData(state.current,d);
+  inp.value='';
+  renderDailyModules();
+  renderTeam();
+}
+function jugglingDaysThisWeek(n){
+  var d=getJugData(n);
+  var now=new Date();
+  var day=now.getDay();
+  var monday=new Date(now);
+  monday.setDate(now.getDate()-(day===0?6:day-1));
+  monday.setHours(0,0,0,0);
+  return d.log.filter(function(e){return new Date(e.date)>=monday;}).length;
+}
+function renderDailyModules(){
+  var el=document.getElementById('daily-modules');
+  if(!el)return;
+  var d=getDailyData(state.current);
+  var jd=getJugData(state.current);
+  var t=todayStr();
+  var todayJug=jd.log.find(function(e){return e.date===t;});
+  var daysThisWeek=jugglingDaysThisWeek(state.current);
+  var bsDone=d.bs.length;var bsTotal=BALL_SKILLS.length;
+  var stDone=d.st.length;var stTotal=STRENGTH.length;
+  var bsItems=BALL_SKILLS.map(function(item){
+    var done=d.bs.indexOf(item.id)>-1;
+    return '<div class="daily-item'+(done?' done':'')+'" onclick="toggleDailyItem(\'bs\',\''+item.id+'\')"><div class="daily-cb"><div class="daily-cb-inner"></div></div><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>';
+  }).join('');
+  var stItems=STRENGTH.map(function(item){
+    var done=d.st.indexOf(item.id)>-1;
+    return '<div class="daily-item'+(done?' done':'')+'" onclick="toggleDailyItem(\'st\',\''+item.id+'\')"><div class="daily-cb"><div class="daily-cb-inner"></div></div><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>';
+  }).join('');
+  var recentLog=jd.log.slice(0,6).map(function(e){
+    var isPR=e.count===jd.pr&&jd.pr>0;
+    return '<div class="jug-log-row'+(isPR?' jug-log-pr':'')+'"><span>'+e.date+'</span><span>'+e.count+(isPR?' 🏆':'')+'</span></div>';
+  }).join('');
+  el.innerHTML=
+    '<div class="daily-section"><div class="daily-hdr" id="bs-panel-hdr" onclick="toggleDailyPanel(\'bs-panel\')"><div class="daily-hdr-left"><span class="daily-hdr-icon">⚽</span><span class="daily-hdr-title">Ball Skills</span><span class="daily-hdr-prog">'+bsDone+'/'+bsTotal+'</span></div><span class="daily-hdr-arrow">▼</span></div><div class="daily-body" id="bs-panel">'+bsItems+'</div></div>'
+    +'<div class="daily-section"><div class="daily-hdr" id="st-panel-hdr" onclick="toggleDailyPanel(\'st-panel\')"><div class="daily-hdr-left"><span class="daily-hdr-icon">💪</span><span class="daily-hdr-title">Strength Training</span><span class="daily-hdr-prog">'+stDone+'/'+stTotal+'</span></div><span class="daily-hdr-arrow">▼</span></div><div class="daily-body" id="st-panel">'+stItems+'</div></div>'
+    +'<div class="jug-section"><div class="jug-hdr"><span class="daily-hdr-icon">🎯</span><span class="jug-hdr-title">Juggling</span>'+(jd.pr>0?'<span class="jug-pr-badge">PR: '+jd.pr+'</span>':'')+'</div><div class="jug-input-row"><input class="jug-input" id="jug-input" type="number" min="1" placeholder="Today\'s count" /><button class="jug-btn" onclick="logJuggling()">Log it</button></div>'+(recentLog?'<div class="jug-log">'+recentLog+'</div>':'')+'<div class="jug-goal">Goal: juggle '+daysThisWeek+'/5 days this week'+(todayJug?' · Today: '+todayJug.count:'')+'</div></div>';
+}
 const DRILL_VIDEOS = {
   1:'https://vimeo.com/1044047062/0310362d37?share=copy',
   2:'https://vimeo.com/1044047173/34ef3b4f37?share=copy',
@@ -933,6 +1075,7 @@ function renderTraining(){
   });
 
   document.getElementById('drill-list').innerHTML = html;
+  renderDailyModules();
 
   // Restore open state
   [1,2,3].forEach(wk=>{
@@ -1043,6 +1186,22 @@ function copyMyCode(){
     document.getElementById('my-code').select?.();
     showToast('Copy the code above and send to teammates!');
   });
+
+  // Juggling leaderboard
+  var jugSorted = PLAYERS.map(function(p){
+    var jd = getJugData(p.name);
+    return {name:p.name, color:p.color, pr:jd.pr, days:jugglingDaysThisWeek(p.name)};
+  }).sort(function(a,b){return b.pr-a.pr;});
+  var jugHtml = '<p class="jug-lb-title">Juggling Records</p>';
+  jugHtml += jugSorted.map(function(p,i){
+    return '<div class="jug-lb-row">'
+      +'<span class="jug-lb-rank">'+(i===0?'\ud83e\udd47':i===1?'\ud83e\udd48':i===2?'\ud83e\udd49':i+1)+'</span>'
+      +'<div class="jug-lb-dot" style="background:'+p.color+'"></div>'
+      +'<span class="jug-lb-name">'+p.name+'</span>'
+      +(p.pr>0?'<span class="jug-lb-pr">'+p.pr+'</span><span class="jug-lb-days">'+p.days+'/5 days</span>':'<span class="jug-lb-days" style="color:rgba(255,255,255,.2)">no record yet</span>')
+      +'</div>';
+  }).join('');
+  document.getElementById('jug-lb').innerHTML = jugHtml;
 }
 
 function importCode(){
