@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Azzurri Summer Masters – Body Feint Training</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#0d0d0d;color:#fff}
+
+/* ── HEADER ── */
+.hero{
+  background:linear-gradient(135deg,#0d0d0d 0%,#1a1a2e 50%,#0d0d0d 100%);
+  padding:48px 24px 36px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,215,0,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-ball{font-size:3rem;margin-bottom:12px;display:block}
+.hero h1{
+  font-size:clamp(1.4rem,5vw,2.2rem);
+  font-weight:900;
+  letter-spacing:-.5px;
+  background:linear-gradient(135deg,#FFD700,#FF8C00);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:6px;
+}
+.hero-sub{
+  font-size:.95rem;
+  color:rgba(255,255,255,.45);
+  max-width:380px;
+  margin:0 auto;
+  line-height:1.5;
+}
+
+/* ── CARDS ── */
+.cards{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  padding:32px 20px 48px;
+  max-width:520px;
+  margin:0 auto;
+}
+
+.card{
+  display:block;
+  text-decoration:none;
+  color:#fff;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;
+  padding:28px 24px;
+  transition:transform .18s,border-color .18s,background .18s;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:'';
+  position:absolute;inset:0;
+  opacity:0;
+  transition:opacity .18s;
+}
+.card:hover{transform:translateY(-3px)}
+.card:hover::before{opacity:1}
+.card:active{transform:translateY(0)}
+
+/* Storm card – gold */
+.card-storm{border-color:rgba(255,215,0,.25)}
+.card-storm::before{background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(255,140,0,.06))}
+.card-storm:hover{border-color:rgba(255,215,0,.55);background:rgba(255,215,0,.07)}
+
+/* U-13 card – cyan */
+.card-u13{border-color:rgba(0,229,255,.2)}
+.card-u13::before{background:linear-gradient(135deg,rgba(0,229,255,.07),rgba(0,180,216,.05))}
+.card-u13:hover{border-color:rgba(0,229,255,.5);background:rgba(0,229,255,.06)}
+
+.card-header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.card-icon{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;flex-shrink:0;
+}
+.card-storm .card-icon{background:linear-gradient(135deg,#FFD700,#FF8C00)}
+.card-u13  .card-icon{background:linear-gradient(135deg,#00E5FF,#00B4D8)}
+
+.card-name{
+  font-size:1.15rem;
+  font-weight:800;
+  letter-spacing:-.3px;
+}
+.card-storm .card-name{color:#FFD700}
+.card-u13  .card-name{color:#00E5FF}
+
+.card-label{
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.35);
+  margin-top:1px;
+}
+
+.card-desc{
+  font-size:.85rem;
+  color:rgba(255,255,255,.45);
+  line-height:1.55;
+  margin-bottom:16px;
+}
+
+.card-cta{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-size:.82rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  padding:8px 16px;
+  border-radius:8px;
+  transition:background .15s;
+}
+.card-storm .card-cta{background:rgba(255,215,0,.15);color:#FFD700}
+.card-storm:hover .card-cta{background:rgba(255,215,0,.25)}
+.card-u13  .card-cta{background:rgba(0,229,255,.12);color:#00E5FF}
+.card-u13:hover  .card-cta{background:rgba(0,229,255,.22)}
+
+.card-cta-arrow{font-size:1rem;transition:transform .15s}
+.card:hover .card-cta-arrow{transform:translateX(3px)}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;
+  padding:0 20px 40px;
+  font-size:.75rem;
+  color:rgba(255,255,255,.2);
+  letter-spacing:.04em;
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="hero-ball">⚽</span>
+  <h1>Summer Masters</h1>
+  <p class="hero-sub">Body Feint Training Program — 3 weeks, 41 drills, one unstoppable move</p>
+</div>
+
+<div class="cards">
+
+  <a class="card card-storm" href="azzurri-storm.html">
+    <div class="card-header">
+      <div class="card-icon">🌩️</div>
+      <div>
+        <div class="card-name">Azzurri U-11 Premier</div>
+        <div class="card-label">Team Tracker</div>
+      </div>
+    </div>
+    <p class="card-desc">Track your body feint progress, earn badges, and see where you rank on the team leaderboard.</p>
+    <span class="card-cta">Open Tracker <span class="card-cta-arrow">→</span></span>
+  </a>
+
+  <a class="card card-u13" href="azzurri-u13.html">
+    <div class="card-header">
+      <div class="card-icon">⚡</div>
+      <div>
+        <div class="card-name">Azzurri U-13 Premier</div>
+        <div class="card-label">Team Tracker</div>
+      </div>
+    </div>
+    <p class="card-desc">Track your body feint progress, earn badges, and see where you rank on the team leaderboard.</p>
+    <span class="card-cta">Open Tracker <span class="card-cta-arrow">→</span></span>
+  </a>
+
+</div>
+
+<footer>AZZURRI SUMMER MASTERS &nbsp;·&nbsp; BODY FEINT PROGRAM</footer>
+
+</body>
+</html>
