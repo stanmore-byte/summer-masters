@@ -269,7 +269,9 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 .jug-no-log{text-align:center;color:rgba(255,255,255,.3);font-size:.8em;padding:10px 0;font-style:italic}
 .jug-today-count{font-size:.85em;color:rgba(255,255,255,.6);padding:5px 0 2px;text-align:center}
 .jug-today-count strong{color:#FFD700;font-size:1.15em}
-.jug-log-date{flex:1;color:rgba(255,255,255,.55);font-size:.82em}
+.jug-log-date{flex:1;color:rgba(255,255,255,.6);font-size:.83em;font-weight:600}
+.jug-log-count{font-size:.9em;font-weight:900;color:#FFD700;min-width:60px;text-align:right}
+.jug-log-row{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;margin-bottom:3px;background:rgba(255,255,255,.03)}
 
 /* ── STREAK LEADERBOARD ── */
 .streak-lb{margin-bottom:16px}
@@ -295,6 +297,11 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 .jug-no-pr{color:rgba(255,255,255,.2)!important}
 .jug-new-pr{font-size:.68em;background:#e74c3c;color:#fff;padding:1px 5px;border-radius:4px;font-weight:800;vertical-align:middle;margin-left:4px}
 .team-empty{text-align:center;color:rgba(255,255,255,.3);font-size:.82em;padding:10px;margin-bottom:12px;font-style:italic}
+
+/* ── PLAYER CARD ENHANCEMENTS ── */
+.pc-jersey-badge{font-size:.72em;font-weight:900;color:rgba(255,255,255,.5);margin-top:-4px;letter-spacing:.02em}
+.pc-realname{font-size:.7em;color:rgba(255,255,255,.4);margin-top:2px}
+.pc-av{font-size:1em}
 </style>
 </head>
 <body>
@@ -406,21 +413,21 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 //  PLAYER DATA
 // ══════════════════════════════════════════════
 const PLAYERS = [
-  {name:'Madalyn Baker',            color:'#E91E63', emoji:'MB'},
-  {name:'Marie Twetan',             color:'#9C27B0', emoji:'MT'},
-  {name:'Susanna Davidow',          color:'#3F51B5', emoji:'SD'},
-  {name:'Hailey Olson',             color:'#2196F3', emoji:'HO'},
-  {name:'Reese Hooker',             color:'#00BCD4', emoji:'RH'},
-  {name:'Noelle Barnhart',          color:'#009688', emoji:'NB'},
-  {name:'Charlotte Blauch',         color:'#4CAF50', emoji:'CB'},
-  {name:'Kaia Gadbury',             color:'#8BC34A', emoji:'KG'},
-  {name:'Melissa Acosta Rodriguez', color:'#FF9800', emoji:'MA'},
-  {name:'Baylor Jones',             color:'#FF5722', emoji:'BJ'},
-  {name:'Caroline Fennemore',       color:'#795548', emoji:'CF'},
-  {name:'Hannah Haughey',           color:'#00ACC1', emoji:'HH'},
-  {name:'Camryn Weissman',          color:'#F44336', emoji:'CW'},
-  {name:'London Jean Luis',         color:'#673AB7', emoji:'LJ'},
-  {name:'Ellie Polak',              color:'#03A9F4', emoji:'EP'},
+  {name:'Madalyn',   color:'#E91E63', emoji:'Md'},
+  {name:'Marie',     color:'#9C27B0', emoji:'Mr'},
+  {name:'Susanna',   color:'#3F51B5', emoji:'Su'},
+  {name:'Hailey',    color:'#2196F3', emoji:'Ha'},
+  {name:'Reese',     color:'#00BCD4', emoji:'Re'},
+  {name:'Noelle',    color:'#009688', emoji:'No'},
+  {name:'Charlotte', color:'#4CAF50', emoji:'Ch'},
+  {name:'Kaia',      color:'#8BC34A', emoji:'Ka'},
+  {name:'Melissa',   color:'#FF9800', emoji:'Me'},
+  {name:'Baylor',    color:'#FF5722', emoji:'Ba'},
+  {name:'Caroline',  color:'#795548', emoji:'Ca'},
+  {name:'Hannah',    color:'#00ACC1', emoji:'Hn'},
+  {name:'Camryn',    color:'#F44336', emoji:'Cm'},
+  {name:'London',    color:'#673AB7', emoji:'Lo'},
+  {name:'Ellie',     color:'#03A9F4', emoji:'El'},
 ];
 
 // ══════════════════════════════════════════════
@@ -552,8 +559,8 @@ function getDailyHistory(n){
 }
 function getDayData(n,ds){var h=getDailyHistory(n);return h[ds]||{bs:[],st:[]};}
 function saveDayData(n,ds,data){var h=getDailyHistory(n);h[ds]=data;localStorage.setItem(getDailyKey(n),JSON.stringify(h));}
-function isDayComplete(n,ds){var d=getDayData(n,ds);return d.bs.length===BALL_SKILLS.length&&d.st.length===STRENGTH.length;}
-function isDayPartial(n,ds){var d=getDayData(n,ds);return(d.bs.length+d.st.length)>0&&!isDayComplete(n,ds);}
+function isDayComplete(n,ds){var d=getDayData(n,ds);var jd=getJugData(n);var hasJug=jd.log.some(function(e){return e.date===ds;});return d.bs.length===BALL_SKILLS.length&&d.st.length===STRENGTH.length&&hasJug;}
+function isDayPartial(n,ds){var d=getDayData(n,ds);var jd=getJugData(n);var hasJug=jd.log.some(function(e){return e.date===ds;});return(d.bs.length+d.st.length+(hasJug?1:0))>0&&!isDayComplete(n,ds);}
 function getStreak(n){
   var streak=0;var d=new Date();
   for(var i=0;i<100;i++){
@@ -714,10 +721,14 @@ function renderDailyModules(){
     +'</div>';
 
   // Full juggling log (all entries, newest first; highlight selected day)
+  var _months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var allLog=jd.log.map(function(e){
     var isPR=e.count===jd.pr&&jd.pr>0;
     var isSel=e.date===selDay;
-    return '<div class="jug-log-row'+(isPR?' jug-log-pr':'')+(isSel?' jug-log-sel':'')+'"><span class="jug-log-date">'+e.date+'</span><span class="jug-log-count">'+e.count+(isPR?' 🏆':'')+'</span></div>';
+    var _dt=new Date(e.date+'T12:00:00');
+    var _dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var _label=_dayNames[_dt.getDay()]+' '+_months[_dt.getMonth()]+' '+_dt.getDate();
+    return '<div class="jug-log-row'+(isPR?' jug-log-pr':'')+(isSel?' jug-log-sel':'')+'">'+'<span class="jug-log-date">'+_label+'</span>'+'<span class="jug-log-count">'+e.count+(isPR?' 🏆 PR!':'')+'</span>'+'</div>';
   }).join('');
 
   // Juggling panel — always visible; input always logs for today
@@ -1186,9 +1197,15 @@ function renderSelector(){
   grid.innerHTML = PLAYERS.map(p=>{
     const done = drillsDone(p.name);
     const pct = Math.round(done/41*100);
+    const nick = getDisplayName(p.name);
+    const jersey = getJerseyNum(p.name);
+    const hasCustom = nick !== p.name || jersey;
+    const avContent = jersey ? '#'+jersey : p.emoji;
     return `<div class="pc" onclick="selectPlayer('${p.name}')">
-      <div class="pc-av" style="background:${p.color}">${p.emoji}</div>
-      <div class="pc-name">${p.name}</div>
+      <div class="pc-av" style="background:${p.color}">${avContent}</div>
+      <div class="pc-name">${nick}${jersey && !nick.startsWith('#') ? '' : ''}</div>
+      ${jersey ? `<div class="pc-jersey-badge">#${jersey}</div>` : ''}
+      ${hasCustom && nick !== p.name ? `<div class="pc-realname">${p.name}</div>` : ''}
       <div class="pc-bar-wrap"><div class="pc-bar" style="width:${pct}%;background:${p.color}"></div></div>
       <div class="pc-done">${done > 0 ? done+'/41 drills' : 'Not started'}</div>
     </div>`;
