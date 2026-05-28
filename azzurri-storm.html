@@ -18,6 +18,7 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 .sel-hero{text-align:center;padding:24px 0 20px}
 .sel-hero h1{font-size:2.2em;font-weight:900;background:linear-gradient(90deg,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .sel-hero p{color:#7fbfff;margin-top:6px;font-size:1em}
+.sel-prompt{text-align:center;font-size:.82em;color:rgba(255,255,255,.38);padding:0 20px 18px;margin-top:-4px;font-weight:500;letter-spacing:.01em}
 .player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-width:720px;margin:0 auto}
 .pc{border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;background:rgba(255,255,255,.06)}
 .pc:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.35)}
@@ -182,6 +183,31 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 .daily-hdr-prog{font-size:.7em;color:rgba(255,255,255,.35);margin-left:4px}
 .daily-hdr-arrow{font-size:.75em;color:rgba(255,255,255,.3);transition:transform .2s}
 .daily-hdr.open .daily-hdr-arrow{transform:rotate(180deg)}
+/* ── SECTION HEADER PROGRESS BAR ── */
+.daily-hdr-mid{display:flex;align-items:center;gap:6px;flex:1;margin:0 10px}
+.daily-hdr-pbar{flex:1;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.daily-hdr-pfill{height:100%;border-radius:3px;transition:width .4s ease,background .4s ease}
+.daily-hdr-pct{font-size:.68em;font-weight:700;color:rgba(255,255,255,.35);min-width:28px;text-align:right}
+/* ── DAY STRIP ── */
+.day-strip{display:flex;gap:5px;padding:2px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.day-strip::-webkit-scrollbar{display:none}
+.day-pill{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;min-width:42px;flex-shrink:0;transition:all .15s}
+.day-pill:hover{background:rgba(255,255,255,.09)}
+.day-pill.sel{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35)}
+.day-pill-lbl{font-size:.62em;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(255,255,255,.35)}
+.day-pill.sel .day-pill-lbl{color:rgba(255,255,255,.7)}
+.day-pill-num{font-size:.92em;font-weight:800;color:rgba(255,255,255,.55)}
+.day-pill.sel .day-pill-num{color:#fff}
+.day-pill.is-today .day-pill-num{color:#FFD700}
+.day-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.1)}
+.day-dot.partial{background:#FFD700}
+.day-dot.done{background:#27ae60}
+.day-viewing{font-size:.76em;color:rgba(255,255,255,.35);text-align:center;padding:2px 0 10px;line-height:1.4}
+.day-viewing strong{color:rgba(255,255,255,.6)}
+.day-status{font-weight:700;color:rgba(255,255,255,.45)}
+.done-status{color:#27ae60!important}
+.partial-status{color:#FFD700!important}
+.future-item{opacity:.45;cursor:default}
 .daily-body{display:none;padding:8px 4px 2px}
 .daily-body.open{display:block}
 .daily-item{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}
@@ -273,6 +299,15 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 .jug-log-count{font-size:.9em;font-weight:900;color:#FFD700;min-width:60px;text-align:right}
 .jug-log-row{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;margin-bottom:3px;background:rgba(255,255,255,.03)}
 
+/* ── JUGGLING CHART & ENHANCED SECTION ── */
+.jug-chart-outer{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:8px 0 4px;margin-bottom:6px}
+.jug-chart-outer::-webkit-scrollbar{display:none}
+.jug-chart-title{font-size:.65em;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.22);margin-bottom:2px}
+.jug-streak-row{display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.22);border-radius:8px;margin-bottom:10px}
+.jug-del-btn{background:rgba(255,80,80,.13);border:1px solid rgba(255,80,80,.28);color:rgba(255,110,110,.8);font-size:.8em;padding:7px 10px;border-radius:8px;cursor:pointer;flex-shrink:0;transition:background .15s}
+.jug-del-btn:hover{background:rgba(255,80,80,.28)}
+.jug-pr-note{font-size:.74em;color:#FFD700;text-align:center;padding:2px 0 6px;font-weight:700}
+
 /* ── STREAK LEADERBOARD ── */
 .streak-lb{margin-bottom:16px}
 .streak-lb-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:4px}
@@ -302,6 +337,29 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
 .pc-jersey-badge{font-size:.72em;font-weight:900;color:rgba(255,255,255,.5);margin-top:-4px;letter-spacing:.02em}
 .pc-realname{font-size:.7em;color:rgba(255,255,255,.4);margin-top:2px}
 .pc-av{font-size:1em}
+
+/* ── ACTIVITY GRID ── */
+.overall-bar{display:block}
+#drill-list{display:none}
+.ag-week-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 0 12px;gap:8px}
+.ag-nav-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 14px;border-radius:20px;font-size:.78em;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s}
+.ag-nav-btn:hover{background:rgba(255,255,255,.18)}
+.ag-week-label{font-size:.88em;font-weight:800;color:#FFD700;text-align:center;flex:1}
+.ag-table{width:100%;border-collapse:collapse;margin-bottom:14px}
+.ag-day-header{font-size:.72em;font-weight:800;text-align:center;padding:4px 3px 8px;color:rgba(255,255,255,.45);min-width:40px}
+.ag-day-header.today{color:#FFD700}
+.ag-day-header.today .ag-date-num{background:#FFD700;color:#0d1b2a;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
+.ag-date-num{display:block;font-size:.95em;font-weight:900;margin-top:1px}
+.ag-section-row td{padding:10px 0 4px;font-size:.7em;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.ag-label-cell{padding:5px 12px 5px 0;vertical-align:middle;white-space:nowrap}
+.ag-label-name{display:block;font-size:.8em;font-weight:700;color:rgba(255,255,255,.8)}
+.ag-label-target{display:block;font-size:.68em;color:rgba(255,255,255,.35);margin-top:1px}
+.ag-check-cell{text-align:center;padding:3px 2px;vertical-align:middle}
+.ag-check{width:26px;height:26px;border-radius:7px;border:2px solid rgba(255,255,255,.18);display:inline-flex;align-items:center;justify-content:center;font-size:.85em;font-weight:900;transition:all .15s;cursor:pointer;color:transparent;background:rgba(255,255,255,.03)}
+.ag-check.done{border-color:#27AE60;background:rgba(39,174,96,.25);color:#4CD97A}
+.ag-check.future{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.02);cursor:default;opacity:.4}
+.ag-check:not(.done):not(.future):hover{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.08)}
+.ag-row:hover .ag-label-name{color:#fff}
 </style>
 </head>
 <body>
@@ -311,13 +369,14 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0d1b2a;color:
   <div class="sel-hero">
     <div style="font-size:2.8em;margin-bottom:6px">⚽</div>
     <h1>AZZURRI U-11 PREMIER</h1>
-    <p>Body Feint Training — Who are you?</p>
+    <p>2026 Summer Program</p>
   </div>
   <div class="extra-mile">
     <p class="em-quote">"There are no crowds lining the extra mile."</p>
     <p class="em-champ">Champions Do Extra: doing the ordinary things, extra.</p>
     <p class="em-attr">— James Kerr, <em>Legacy</em></p>
   </div>
+  <p class="sel-prompt">Select your player profile below to log your training</p>
   <div class="player-grid" id="player-grid"></div>
 </div>
 
@@ -557,8 +616,8 @@ function getDailyHistory(n){
 }
 function getDayData(n,ds){var h=getDailyHistory(n);return h[ds]||{bs:[],st:[]};}
 function saveDayData(n,ds,data){var h=getDailyHistory(n);h[ds]=data;localStorage.setItem(getDailyKey(n),JSON.stringify(h));}
-function isDayComplete(n,ds){var d=getDayData(n,ds);var jd=getJugData(n);var hasJug=jd.log.some(function(e){return e.date===ds;});return d.bs.length===BALL_SKILLS.length&&d.st.length===STRENGTH.length&&hasJug;}
-function isDayPartial(n,ds){var d=getDayData(n,ds);var jd=getJugData(n);var hasJug=jd.log.some(function(e){return e.date===ds;});return(d.bs.length+d.st.length+(hasJug?1:0))>0&&!isDayComplete(n,ds);}
+function isDayComplete(n,ds){var d=getDayData(n,ds);return d.bs.length===BALL_SKILLS.length&&d.st.length===STRENGTH.length;}
+function isDayPartial(n,ds){var d=getDayData(n,ds);return(d.bs.length+d.st.length)>0&&!isDayComplete(n,ds);}
 function getStreak(n){
   var streak=0;var d=new Date();
   for(var i=0;i<100;i++){
@@ -579,9 +638,82 @@ function getBestStreak(n){
   });
   return best;
 }
+function getJugStreak(n){
+  var jd=getJugData(n);
+  var dates=jd.log.map(function(e){return e.date;});
+  var streak=0;
+  for(var i=0;i<365;i++){
+    var ds=new Date(new Date().getTime()-i*86400000).toISOString().split('T')[0];
+    if(dates.indexOf(ds)>-1){streak++;}else{break;}
+  }
+  return streak;
+}
+function getBestJugStreak(n){
+  var jd=getJugData(n);
+  if(!jd.log.length)return 0;
+  var dates=jd.log.map(function(e){return e.date;}).sort();
+  var best=0;var cur=0;var prev=null;
+  dates.forEach(function(ds){
+    if(prev){var diff=(new Date(ds)-new Date(prev))/86400000;cur=(diff<=1)?cur+1:1;}
+    else{cur=1;}
+    if(cur>best)best=cur;prev=ds;
+  });
+  return best;
+}
+function buildJugChart(jd,today){
+  if(!jd.log.length)return '<div style="text-align:center;padding:14px 0 8px;color:rgba(255,255,255,.26);font-size:.78em;font-style:italic">No juggling logged yet — start your streak! 🎯</div>';
+  var allDays=[];
+  for(var i=27;i>=0;i--){
+    var ds=new Date(new Date().getTime()-i*86400000).toISOString().split('T')[0];
+    var entry=jd.log.find(function(e){return e.date===ds;});
+    allDays.push({date:ds,count:entry?entry.count:0});
+  }
+  var firstNZ=allDays.findIndex(function(d){return d.count>0;});
+  if(firstNZ<0)firstNZ=allDays.length-1;
+  var days=allDays.slice(Math.max(0,firstNZ-1));
+  var pr=jd.pr||1;
+  var maxCount=Math.max(pr,1);
+  var BAR_W=32;var BAR_GAP=4;
+  var CHART_H=72;var LABEL_H=20;var COUNT_H=16;var TOP_PAD=4;
+  var TOTAL_H=TOP_PAD+COUNT_H+CHART_H+LABEL_H;
+  var totalW=Math.max(days.length*(BAR_W+BAR_GAP)-BAR_GAP,1);
+  var bars='';
+  days.forEach(function(d,i){
+    var x=i*(BAR_W+BAR_GAP);
+    var barH=d.count>0?Math.max(4,Math.round(d.count/maxCount*CHART_H)):0;
+    var barY=TOP_PAD+COUNT_H+(CHART_H-barH);
+    var isToday=d.date===today;
+    var isPR=d.count>0&&d.count===pr;
+    var barColor=isPR?'url(#prGrad)':isToday&&d.count>0?'#4fc3f7':d.count>0?'rgba(100,180,255,.7)':'rgba(255,255,255,.05)';
+    var dateObj=new Date(d.date+'T12:00:00');
+    var dayLbl=(dateObj.getMonth()+1)+'/'+(dateObj.getDate());
+    bars+='<g>';
+    if(barH>0){
+      bars+='<rect x="'+x+'" y="'+barY+'" width="'+BAR_W+'" height="'+barH+'" rx="4" fill="'+barColor+'" />';
+      bars+='<text x="'+(x+BAR_W/2)+'" y="'+(barY-3)+'" text-anchor="middle" font-size="9" fill="'+(isPR?'#FFD700':'rgba(255,255,255,.65)')+'" font-weight="'+(isPR?'900':'600')+'">'+d.count+'</text>';
+    }else{
+      bars+='<rect x="'+x+'" y="'+(TOP_PAD+COUNT_H+CHART_H-3)+'" width="'+BAR_W+'" height="3" rx="1.5" fill="rgba(255,255,255,.07)" />';
+    }
+    bars+='<text x="'+(x+BAR_W/2)+'" y="'+(TOP_PAD+COUNT_H+CHART_H+LABEL_H-4)+'" text-anchor="middle" font-size="9" fill="'+(isToday?'#FFD700':'rgba(255,255,255,.25)')+'">'+dayLbl+'</text>';
+    if(isToday){bars+='<circle cx="'+(x+BAR_W/2)+'" cy="'+(TOP_PAD+COUNT_H+CHART_H+LABEL_H-15)+'" r="2.5" fill="#FFD700" />';}
+    bars+='</g>';
+  });
+  var prLineY=TOP_PAD+COUNT_H;
+  return '<div class="jug-chart-title">Juggle history — last 28 days</div>'
+    +'<div class="jug-chart-outer" id="jug-chart-outer"><svg width="'+totalW+'" height="'+TOTAL_H+'" xmlns="http://www.w3.org/2000/svg">'
+    +'<defs><linearGradient id="prGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FF8C00"/></linearGradient></defs>'
+    +'<line x1="0" y1="'+prLineY+'" x2="'+totalW+'" y2="'+prLineY+'" stroke="rgba(255,215,0,.18)" stroke-dasharray="3,3" stroke-width="1"/>'
+    +(pr>0?'<text x="2" y="'+(prLineY+10)+'" font-size="8" fill="rgba(255,215,0,.45)" font-weight="700">PR '+pr+'</text>':'')
+    +bars+'</svg></div>';
+}
+var _weekOffset=0;
+function prevWeek(){_weekOffset--;renderDailyModules();}
+function nextWeek(){_weekOffset++;renderDailyModules();}
 function getWeekDays(){
   var now=new Date();var day=now.getDay();
-  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));mon.setHours(0,0,0,0);
+  var mon=new Date(now);
+  mon.setDate(now.getDate()-(day===0?6:day-1)+(_weekOffset*7));
+  mon.setHours(0,0,0,0);
   var days=[];
   for(var i=0;i<7;i++){var d=new Date(mon);d.setDate(mon.getDate()+i);days.push(d.toISOString().split('T')[0]);}
   return days;
@@ -592,8 +724,8 @@ function getJugData(n){
   catch(e){return{pr:0,log:[]};}
 }
 function saveJugData(n,d){localStorage.setItem(getJugKey(n),JSON.stringify(d));}
-function toggleDailyItem(type,id){
-  var ds=state.selDay||todayStr();
+function toggleDailyItem(type,id,ds){
+  ds=ds||todayStr();
   var d=getDayData(state.current,ds);
   var arr=type==='bs'?d.bs:d.st;
   var idx=arr.indexOf(id);
@@ -613,17 +745,26 @@ function toggleDailyPanel(id){
   var key=id==='bs-panel'?'bs':'st';
   _panelState[key]=isOpen;
 }
-function logJuggling(){
+function logJuggling(ds){
+  ds=ds||todayStr();
   var inp=document.getElementById('jug-input');
   var val=parseInt(inp.value,10);
   if(!val||val<1)return;
   var d=getJugData(state.current);
-  var t=todayStr();
-  d.log=d.log.filter(function(e){return e.date!==t;});
-  d.log.unshift({date:t,count:val});
-  if(val>d.pr)d.pr=val;
+  d.log=d.log.filter(function(e){return e.date!==ds;});
+  d.log.unshift({date:ds,count:val});
+  d.log.sort(function(a,b){return b.date.localeCompare(a.date);});
+  d.pr=d.log.reduce(function(max,e){return Math.max(max,e.count);},0);
   saveJugData(state.current,d);
   inp.value='';
+  renderDailyModules();
+  renderTeam();
+}
+function deleteJugEntry(ds){
+  var d=getJugData(state.current);
+  d.log=d.log.filter(function(e){return e.date!==ds;});
+  d.pr=d.log.length>0?d.log.reduce(function(max,e){return Math.max(max,e.count);},0):0;
+  saveJugData(state.current,d);
   renderDailyModules();
   renderTeam();
 }
@@ -641,36 +782,15 @@ function renderDailyModules(){
   var el=document.getElementById('daily-modules');
   if(!el)return;
   var today=todayStr();
-  if(!state.selDay)state.selDay=today;
-  var selDay=state.selDay;
-  var d=getDayData(state.current,selDay);
-  var jd=getJugData(state.current);
-  var todayJug=jd.log.find(function(e){return e.date===today;});
-  var daysThisWeek=jugglingDaysThisWeek(state.current);
-  var streak=getStreak(state.current);
-  var bestStreak=getBestStreak(state.current);
   var weekDays=getWeekDays();
   var dayLabels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  var isToday=selDay===today;
-  var isFutureDay=selDay>today;
-  var bsDone=d.bs.length;var bsTotal=BALL_SKILLS.length;
-  var stDone=d.st.length;var stTotal=STRENGTH.length;
+  var fullDayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-  // Day strip with date numbers
-  var strip='<div class="day-strip">';
-  weekDays.forEach(function(ds,i){
-    var fut=ds>today;
-    var comp=isDayComplete(state.current,ds);
-    var part=isDayPartial(state.current,ds);
-    var dateNum=new Date(ds+'T12:00:00').getDate();
-    var cls='day-bubble'+(ds===today?' today':'')+(ds===selDay?' selected':'')+(fut?' future':'')+(comp?' complete':part?' partial':'');
-    strip+='<div class="'+cls+'" onclick="selectDay(\''+ds+'\')">'
-      +'<span class="day-bubble-lbl">'+dayLabels[i]+'</span>'
-      +'<span class="day-bubble-date">'+dateNum+'</span>'
-      +'<div class="day-bubble-dot">'+(comp?'&#10003;':part?'&middot;':'')+'</div>'
-      +'</div>';
-  });
-  strip+='</div>';
+  // Streak + juggling data
+  var streak=getStreak(state.current);
+  var bestStreak=getBestStreak(state.current);
+  var jd=getJugData(state.current);
+  var daysThisWeek=jugglingDaysThisWeek(state.current);
 
   // Streak bar
   var streakHtml='';
@@ -678,68 +798,124 @@ function renderDailyModules(){
     streakHtml='<div class="streak-bar"><span class="streak-fire">🔥</span><span class="streak-num">'+streak+'</span><span class="streak-lbl"> day streak</span>'+(bestStreak>streak?'<span class="streak-best">Best: '+bestStreak+'</span>':'')+'</div>';
   }
 
-  // Viewing label
-  var dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  // Selected day — default to today if in this week, else first weekday
+  var selDay=state.selDay;
+  if(!selDay||weekDays.indexOf(selDay)<0){
+    selDay=weekDays.indexOf(today)>=0?today:weekDays[0];
+    state.selDay=selDay;
+  }
+
+  // Day strip (pill buttons Mon–Sun)
+  var stripHtml='<div class="day-strip">';
+  weekDays.forEach(function(ds,i){
+    var isToday=ds===today;
+    var isSel=ds===selDay;
+    var dateNum=new Date(ds+'T12:00:00').getDate();
+    var complete=isDayComplete(state.current,ds);
+    var partial=isDayPartial(state.current,ds);
+    var dotCls='day-dot'+(complete?' done':partial?' partial':'');
+    stripHtml+='<div class="day-pill'+(isSel?' sel':'')+(isToday?' is-today':'')+'" onclick="selectDay(\''+ds+'\')">'
+      +'<span class="day-pill-lbl">'+dayLabels[i]+'</span>'
+      +'<span class="day-pill-num">'+dateNum+'</span>'
+      +'<span class="'+dotCls+'"></span>'
+      +'</div>';
+  });
+  stripHtml+='</div>';
+
+  // "Viewing [Day], [date]" info row
+  var isFuture=selDay>today;
   var selDate=new Date(selDay+'T12:00:00');
-  var status=isDayComplete(state.current,selDay)?' — ✅ Complete':isDayPartial(state.current,selDay)?' — ⚡ Partial':' — nothing logged';
-  var viewLbl=isToday?'<div class="day-viewing-label"><span>Today</span></div>':'<div class="day-viewing-label">Viewing <span>'+dayNames[selDate.getDay()]+', '+selDay+'</span>'+(isFutureDay?' — not yet':status)+'</div>';
+  var dayData=getDayData(state.current,selDay);
+  var complete=isDayComplete(state.current,selDay);
+  var partial=isDayPartial(state.current,selDay);
+  var statusLabel=complete?'✅ Complete':partial?'⚡ Partial':'○ Not started';
+  var statusCls=complete?' done-status':partial?' partial-status':'';
+  var dayViewHtml='<div class="day-viewing">Viewing <strong>'+fullDayNames[selDate.getDay()]+', '+selDay+'</strong> — <span class="day-status'+statusCls+'">'+statusLabel+'</span></div>';
 
-  // Ball skills items
-  var bsItems=BALL_SKILLS.map(function(item){
-    var done=d.bs.indexOf(item.id)>-1;
-    var click=!isFutureDay?' onclick="toggleDailyItem(\'bs\',\''+item.id+'\')"':'';
-    return '<div class="daily-item'+(done?' done':'')+'"'+click+'><div class="daily-cb"><div class="daily-cb-inner"></div></div><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>';
-  }).join('');
+  // Build a collapsible section with inline progress bar in the header
+  function buildSection(type,icon,title,items){
+    var arr=type==='bs'?dayData.bs:dayData.st;
+    var doneCount=items.filter(function(it){return arr.indexOf(it.id)>-1;}).length;
+    var total=items.length;
+    var pct=total>0?Math.round(doneCount/total*100):0;
+    // Color: empty = dim white, partial-low = white, 50%+ = gold, 100% = green
+    var fillColor=doneCount===total?'#27ae60':pct>=50?'#FFD700':pct>0?'rgba(255,255,255,.35)':'rgba(0,0,0,0)';
+    var pctLabel=pct>0?pct+'%':'—';
+    var panelId=type+'-panel';
+    var isOpen=_panelState[type]!==false;
 
-  // Strength items
-  var stItems=STRENGTH.map(function(item){
-    var done=d.st.indexOf(item.id)>-1;
-    var click=!isFutureDay?' onclick="toggleDailyItem(\'st\',\''+item.id+'\')"':'';
-    return '<div class="daily-item'+(done?' done':'')+'"'+click+'><div class="daily-cb"><div class="daily-cb-inner"></div></div><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>';
-  }).join('');
+    var html='<div class="daily-section">'
+      +'<div class="daily-hdr'+(isOpen?' open':'')+'" id="'+panelId+'-hdr" onclick="toggleDailyPanel(\''+panelId+'\')">'
+        +'<div class="daily-hdr-left">'
+          +'<span class="daily-hdr-icon">'+icon+'</span>'
+          +'<span class="daily-hdr-title">'+title+'</span>'
+          +'<span class="daily-hdr-prog">'+doneCount+'/'+total+'</span>'
+        +'</div>'
+        +'<div class="daily-hdr-mid">'
+          +'<div class="daily-hdr-pbar"><div class="daily-hdr-pfill" style="width:'+pct+'%;background:'+fillColor+'"></div></div>'
+          +'<span class="daily-hdr-pct">'+pctLabel+'</span>'
+        +'</div>'
+        +'<span class="daily-hdr-arrow">'+(isOpen?'▲':'▼')+'</span>'
+      +'</div>'
+      +'<div class="daily-body'+(isOpen?' open':'')+'" id="'+panelId+'">';
 
-  // Preserve panel open/close state across re-renders
-  var bsOpen=_panelState.bs!==false;
-  var stOpen=_panelState.st!==false;
+    items.forEach(function(item){
+      var isDoneItem=arr.indexOf(item.id)>-1;
+      var clickAttr=isFuture?'':' onclick="toggleDailyItem(\''+type+'\',\''+item.id+'\',\''+selDay+'\')"';
+      html+='<div class="daily-item'+(isDoneItem?' done':'')+(isFuture?' future-item':'')+'"'+clickAttr+'>'
+        +'<div class="daily-cb"><div class="daily-cb-inner"></div></div>'
+        +'<span class="daily-item-name">'+item.name+'</span>'
+        +'<span class="daily-item-target">'+item.target+'</span>'
+        +'</div>';
+    });
 
-  var bsPanel='<div class="daily-section">'
-    +'<div class="daily-hdr" id="bs-panel-hdr" onclick="toggleDailyPanel(\'bs-panel\')">'
-    +'<div class="daily-hdr-left"><span class="daily-hdr-icon">⚽</span><span class="daily-hdr-title">Ball Skills</span><span class="daily-hdr-prog">'+bsDone+'/'+bsTotal+'</span></div>'
-    +'<span class="daily-hdr-arrow">'+(bsOpen?'▲':'▼')+'</span>'
-    +'</div>'
-    +'<div class="daily-body'+(bsOpen?' open':'')+'" id="bs-panel">'+bsItems+'</div>'
-    +'</div>';
+    html+='</div></div>';
+    return html;
+  }
 
-  var stPanel='<div class="daily-section">'
-    +'<div class="daily-hdr" id="st-panel-hdr" onclick="toggleDailyPanel(\'st-panel\')">'
-    +'<div class="daily-hdr-left"><span class="daily-hdr-icon">💪</span><span class="daily-hdr-title">Strength Training</span><span class="daily-hdr-prog">'+stDone+'/'+stTotal+'</span></div>'
-    +'<span class="daily-hdr-arrow">'+(stOpen?'▲':'▼')+'</span>'
-    +'</div>'
-    +'<div class="daily-body'+(stOpen?' open':'')+'" id="st-panel">'+stItems+'</div>'
-    +'</div>';
+  var bsSection=buildSection('bs','⚽','Ball Skills',BALL_SKILLS);
+  var stSection=buildSection('st','💪','Strength Training',STRENGTH);
 
-  // Full juggling log (all entries, newest first; highlight selected day)
-  var _months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var allLog=jd.log.map(function(e){
-    var isPR=e.count===jd.pr&&jd.pr>0;
-    var isSel=e.date===selDay;
-    var _dt=new Date(e.date+'T12:00:00');
-    var _dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    var _label=_dayNames[_dt.getDay()]+' '+_months[_dt.getMonth()]+' '+_dt.getDate();
-    return '<div class="jug-log-row'+(isPR?' jug-log-pr':'')+(isSel?' jug-log-sel':'')+'">'+'<span class="jug-log-date">'+_label+'</span>'+'<span class="jug-log-count">'+e.count+(isPR?' 🏆 PR!':'')+'</span>'+'</div>';
-  }).join('');
-
-  // Juggling panel — always visible; input always logs for today
-  var jugTodayBadge=todayJug?'<div class="jug-today-count">Today: <strong>'+todayJug.count+'</strong>'+(todayJug.count===jd.pr&&jd.pr>0?' 🏆 PR!':'')+'</div>':'';
+  // Juggling section — streak + editable past/today input + chart
+  var jugStreak=getJugStreak(state.current);
+  var jugBestStreak=getBestJugStreak(state.current);
+  var jugStreakHtml='';
+  if(jugStreak>0||jugBestStreak>0){
+    jugStreakHtml='<div class="jug-streak-row">'
+      +'<span style="font-size:1.2em">🔥</span>'
+      +'<span style="font-size:1.05em;font-weight:900;color:#FF8C00">'+jugStreak+'</span>'
+      +'<span style="font-size:.76em;color:rgba(255,255,255,.5);flex:1"> juggling streak</span>'
+      +(jugBestStreak>jugStreak?'<span style="font-size:.7em;color:rgba(255,140,0,.55)">Best: '+jugBestStreak+'</span>':'')
+      +'</div>';
+  }
+  var selJug=jd.log.find(function(e){return e.date===selDay;});
+  var jugInputHtml='';
+  if(!isFuture){
+    var existingVal=selJug?selJug.count:'';
+    var inputPlaceholder=selDay===today?'Today\'s juggle count':'Juggle count for '+selDay;
+    var isPREntry=selJug&&selJug.count===jd.pr&&jd.pr>0;
+    jugInputHtml='<div class="jug-input-row">'
+      +'<input class="jug-input" id="jug-input" type="number" min="1" placeholder="'+inputPlaceholder+'" value="'+existingVal+'" />'
+      +'<button class="jug-btn" onclick="logJuggling(\''+selDay+'\')">'+(selJug?'Update':'Log it')+'</button>'
+      +(selJug?'<button class="jug-del-btn" onclick="deleteJugEntry(\''+selDay+'\')" title="Remove entry">✕</button>':'')
+      +'</div>'
+      +(isPREntry?'<div class="jug-pr-note">🏆 Personal Record!</div>':'');
+  }else{
+    jugInputHtml='<div style="text-align:center;padding:4px 0;font-size:.76em;color:rgba(255,255,255,.22);font-style:italic">Future date — come back to log!</div>';
+  }
+  var chartHtml=buildJugChart(jd,today);
   var jugPanel='<div class="jug-section">'
     +'<div class="jug-hdr"><span class="daily-hdr-icon">🎯</span><span class="jug-hdr-title">Juggling</span>'+(jd.pr>0?'<span class="jug-pr-badge">PR: '+jd.pr+'</span>':'')+'</div>'
-    +'<div class="jug-input-row"><input class="jug-input" id="jug-input" type="number" min="1" placeholder="Today\'s juggle count" /><button class="jug-btn" onclick="logJuggling()">Log it</button></div>'
-    +jugTodayBadge
-    +(allLog?'<div class="jug-log">'+allLog+'</div>':'<div class="jug-no-log">No juggling logged yet — log your first session above!</div>')
+    +jugStreakHtml
+    +jugInputHtml
+    +chartHtml
     +'<div class="jug-goal">🎯 Goal: juggle '+daysThisWeek+'/5 days this week</div>'
     +'</div>';
 
-  el.innerHTML=strip+streakHtml+viewLbl+bsPanel+stPanel+jugPanel;
+  el.innerHTML=streakHtml+stripHtml+dayViewHtml+bsSection+stSection+jugPanel;
+  // Auto-scroll juggling chart to show today (rightmost end)
+  var chartOuter=document.getElementById('jug-chart-outer');
+  if(chartOuter)chartOuter.scrollLeft=chartOuter.scrollWidth;
 }
 function getProfileKey(n){return STORE_KEY+'_prof_'+n.replace(/\s+/g,'_');}
 function getProfile(n){
@@ -1192,17 +1368,24 @@ function decodeProgress(code){
 // ══════════════════════════════════════════════
 function renderSelector(){
   const grid = document.getElementById('player-grid');
-  grid.innerHTML = PLAYERS.map(p=>{
+  // Sort: numbered players first (ascending), unnumbered in original order after
+  const sorted = [...PLAYERS].sort((a,b)=>{
+    const ja=getJerseyNum(a.name), jb=getJerseyNum(b.name);
+    if(ja&&jb) return parseInt(ja)-parseInt(jb);
+    if(ja) return -1;
+    if(jb) return 1;
+    return 0;
+  });
+  grid.innerHTML = sorted.map(p=>{
     const done = drillsDone(p.name);
     const pct = Math.round(done/41*100);
     const nick = getDisplayName(p.name);
     const jersey = getJerseyNum(p.name);
     const hasCustom = nick !== p.name || jersey;
-    const avContent = jersey ? '#'+jersey : p.emoji;
+    const avContent = jersey ? jersey : p.name.charAt(0).toUpperCase();
     return `<div class="pc" onclick="selectPlayer('${p.name}')">
       <div class="pc-av" style="background:${p.color}">${avContent}</div>
-      <div class="pc-name">${nick}${jersey && !nick.startsWith('#') ? '' : ''}</div>
-      ${jersey ? `<div class="pc-jersey-badge">#${jersey}</div>` : ''}
+      <div class="pc-name">${nick}</div>
       ${hasCustom && nick !== p.name ? `<div class="pc-realname">${p.name}</div>` : ''}
       <div class="pc-bar-wrap"><div class="pc-bar" style="width:${pct}%;background:${p.color}"></div></div>
       <div class="pc-done">${done > 0 ? done+'/41 drills' : 'Not started'}</div>
@@ -1237,8 +1420,8 @@ function updateHeader(){
   const done = drillsDone(name);
   const pct = Math.round(done/41*100);
   document.getElementById('ah-av').style.background = p.color;
-  document.getElementById('ah-av').textContent = p.emoji;
   var _jn=getJerseyNum(name);var _dn=getDisplayName(name);
+  document.getElementById('ah-av').textContent = _jn ? _jn : name.charAt(0).toUpperCase();
   document.getElementById('ah-name').textContent=(_jn?'#'+_jn+' ':'')+_dn;
   document.getElementById('ah-sub').textContent = done + '/41 drills · ' + pct + '% complete';
 }
@@ -1455,7 +1638,7 @@ function renderTeam(){
     var jd=getJugData(p.name);
     var todayEntry=jd.log.find(function(e){return e.date===today;});
     var justBeat=todayEntry&&jd.pr>0&&todayEntry.count===jd.pr&&jd.log.length>1;
-    return {name:p.name,color:p.color,emoji:p.emoji,pr:jd.pr,days:jugglingDaysThisWeek(p.name),today:todayEntry?todayEntry.count:0,streak:getStreak(p.name),justBeat:justBeat};
+    return {name:p.name,color:p.color,emoji:p.emoji,pr:jd.pr,days:jugglingDaysThisWeek(p.name),today:todayEntry?todayEntry.count:0,streak:getJugStreak(p.name),justBeat:justBeat};
   }).sort(function(a,b){return b.pr-a.pr;});
   var jugHtml='<p class="team-section-title">🎯 Juggling Records</p><div class="jug-lb">'+jugSorted.map(function(p,i){
     var isMe=p.name===state.current;
