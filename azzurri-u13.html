@@ -1644,7 +1644,8 @@ function updateHeader(){
   var _jn=getJerseyNum(name);var _dn=getDisplayName(name);
   document.getElementById('ah-av').textContent = _jn ? _jn : name.charAt(0).toUpperCase();
   document.getElementById('ah-name').textContent=(_jn?'#'+_jn+' ':'')+_dn;
-  document.getElementById('ah-sub').textContent = done + '/41 drills · ' + pct + '% complete';
+  var _streak=getStreak(name);
+  document.getElementById('ah-sub').textContent=_streak>0?'🔥 '+_streak+(_streak===1?' day streak':' day streak'):'Start your streak today';
 }
 
 // ══════════════════════════════════════════════
