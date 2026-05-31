@@ -735,6 +735,7 @@ function addCDEEntry(){
   var entry={id:Date.now(),date:today,text:text||'',photo:null};
   function doSave(e){
     var entries=getCDEJournal(state.current);entries.unshift(e);saveCDEJournal(state.current,entries);
+    sheetsPost({team:TEAM_ID,player:state.current,type:'cde',data:{id:e.id,date:e.date,text:e.text}});
     if(txt)txt.value='';if(fileInp)fileInp.value='';renderDailyModules();showToast('Activity logged!');
   }
   if(fileInp&&fileInp.files&&fileInp.files[0]){
@@ -747,7 +748,9 @@ function addCDEEntry(){
 function deleteCDEEntry(id){
   if(!confirm('Remove this journal entry?'))return;
   var entries=getCDEJournal(state.current).filter(function(e){return e.id!==id;});
-  saveCDEJournal(state.current,entries);renderDailyModules();
+  saveCDEJournal(state.current,entries);
+  sheetsPost({team:TEAM_ID,player:state.current,type:'cde_delete',data:{id:id}});
+  renderDailyModules();
 }
 function jugglingDaysThisSummer(n){
   var jd=getJugData(n);var start=new Date(PROGRAM_START+'T12:00:00');
@@ -760,7 +763,7 @@ function getDailyHistory(n){
   catch(e){return{};}
 }
 function getDayData(n,ds){var h=getDailyHistory(n);return h[ds]||{bs:[],st:[]};}
-function saveDayData(n,ds,data){var h=getDailyHistory(n);h[ds]=data;localStorage.setItem(getDailyKey(n),JSON.stringify(h));}
+function saveDayData(n,ds,data){var h=getDailyHistory(n);h[ds]=data;localStorage.setItem(getDailyKey(n),JSON.stringify(h));var _d={};_d[ds]=data;sheetsPost({team:TEAM_ID,player:n,type:'daily',data:_d});}
 function isDayComplete(n,ds){var d=getDayData(n,ds);var bs=getPlayerBallSkills(n);var st=getPlayerStrength(n);return d.bs.length===bs.length&&d.st.length===st.length;}
 function isDayPartial(n,ds){var d=getDayData(n,ds);return(d.bs.length+d.st.length)>0&&!isDayComplete(n,ds);}
 function getStreak(n){
@@ -891,6 +894,7 @@ function logJuggling(ds){
   d.log.sort(function(a,b){return b.date.localeCompare(a.date);});
   d.pr=d.log.reduce(function(max,e){return Math.max(max,e.count);},0);
   saveJugData(state.current,d);
+  sheetsPost({team:TEAM_ID,player:state.current,type:'juggling',data:{date:ds,count:val}});
   inp.value='';
   renderDailyModules();
   renderTeam();
@@ -900,6 +904,7 @@ function deleteJugEntry(ds){
   d.log=d.log.filter(function(e){return e.date!==ds;});
   d.pr=d.log.length>0?d.log.reduce(function(max,e){return Math.max(max,e.count);},0):0;
   saveJugData(state.current,d);
+  sheetsPost({team:TEAM_ID,player:state.current,type:'juggling_delete',data:{date:ds}});
   renderDailyModules();
   renderTeam();
 }
@@ -1166,6 +1171,7 @@ function saveProfileData(){
   p.nickname=(ni?ni.value.trim():'');
   p.number=(nu?nu.value.trim():'');
   saveProfile(state.current,p);
+  sheetsPost({team:TEAM_ID,player:state.current,type:'profile',data:{nickname:p.nickname||'',number:p.number||'',color:p.color||''}});
   updateHeader();
   document.getElementById('profile-editor').classList.remove('open');
   renderTeam();
@@ -1531,6 +1537,7 @@ function getDrillSVG(vis){
 //  STATE & STORAGE
 // ══════════════════════════════════════════════
 const STORE_KEY = 'azzurri_storm_v2';
+const TEAM_ID = 'u11';
 let state = { current: null, players: {}, selDay: null };
 let modalDrillId = null;
 
@@ -1640,6 +1647,7 @@ function selectPlayer(name){
   state.current = name;
   saveState();
   showApp();
+  sheetsLoad(name, function(){renderDailyModules();updateHeader();renderSelector();});
 }
 
 // ══════════════════════════════════════════════
@@ -1956,6 +1964,91 @@ function showToast(msg){
   toastTimer = setTimeout(()=>el.classList.remove('show'), 2200);
 }
 
+
+// ══════════════════════════════════════════════
+//  GOOGLE SHEETS SYNC
+//  Set SHEETS_URL after deploying your Apps Script
+// ══════════════════════════════════════════════
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzUBp8n0wVkPrmX6sSN8t1rmFa1Bx7dvqpd0omTTPyyMg-b9Qr__phj0VKmrnJGtTa2zg/exec';
+
+var _syncQueue = [];
+
+function sheetsPost(payload){
+  if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0)return;
+  try{
+    fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(payload)
+    }).catch(function(){_syncQueue.push(payload);});
+  }catch(e){_syncQueue.push(payload);}
+}
+
+function sheetsLoad(playerName,onDone){
+  if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0){if(onDone)onDone();return;}
+  var cbName='_sc'+Date.now();
+  var script=document.createElement('script');
+  var done=false;
+  var timer=setTimeout(function(){
+    if(!done){done=true;if(onDone)onDone();}
+  },6000);
+  window[cbName]=function(resp){
+    if(done)return;done=true;clearTimeout(timer);
+    try{document.head.removeChild(script);}catch(e){}
+    delete window[cbName];
+    if(resp&&resp.ok&&resp.data)mergeFromSheets(playerName,resp.data);
+    flushSyncQueue();
+    if(onDone)onDone();
+  };
+  script.onerror=function(){if(!done){done=true;clearTimeout(timer);if(onDone)onDone();}};
+  script.src=SHEETS_URL+'?team='+TEAM_ID+'&player='+encodeURIComponent(playerName)+'&callback='+cbName;
+  document.head.appendChild(script);
+}
+
+function flushSyncQueue(){
+  while(_syncQueue.length)sheetsPost(_syncQueue.shift());
+}
+
+function mergeFromSheets(n,d){
+  if(d.daily&&Object.keys(d.daily).length){
+    var h=getDailyHistory(n),changed=false;
+    for(var date in d.daily){
+      var sd=d.daily[date],ld=h[date]||{bs:[],st:[]};
+      var mbs=Array.from(new Set((ld.bs||[]).concat(sd.bs||[])));
+      var mst=Array.from(new Set((ld.st||[]).concat(sd.st||[])));
+      if(!h[date]||mbs.length!==(ld.bs||[]).length||mst.length!==(ld.st||[]).length){
+        h[date]={bs:mbs,st:mst};changed=true;
+      }
+    }
+    if(changed)localStorage.setItem(getDailyKey(n),JSON.stringify(h));
+  }
+  if(d.juggling&&d.juggling.log&&d.juggling.log.length){
+    var local=getJugData(n);
+    d.juggling.log.forEach(function(e){
+      if(!local.log.find(function(l){return l.date===e.date;}))local.log.push(e);
+    });
+    local.log.sort(function(a,b){return b.date.localeCompare(a.date);});
+    local.pr=local.log.reduce(function(mx,e){return Math.max(mx,e.count);},0);
+    saveJugData(n,local);
+  }
+  if(d.cde&&d.cde.length){
+    var localCDE=getCDEJournal(n);
+    d.cde.forEach(function(e){
+      if(!localCDE.find(function(l){return String(l.id)===String(e.id);}))localCDE.push(e);
+    });
+    localCDE.sort(function(a,b){return Number(b.id)-Number(a.id);});
+    saveCDEJournal(n,localCDE);
+  }
+  if(d.profile&&(d.profile.nickname||d.profile.number||d.profile.color)){
+    var lp=getProfile(n);
+    if(d.profile.nickname&&!lp.nickname)lp.nickname=d.profile.nickname;
+    if(d.profile.number&&!lp.number)lp.number=d.profile.number;
+    if(d.profile.color&&!lp.color)lp.color=d.profile.color;
+    saveProfile(n,lp);
+  }
+  if(d.plans&&!localStorage.getItem(getPlanKey(n))){
+    localStorage.setItem(getPlanKey(n),JSON.stringify(d.plans));
+  }
+}
+
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
@@ -1963,6 +2056,7 @@ loadState();
 renderSelector();
 if(state.current){
   showApp();
+  sheetsLoad(state.current, function(){renderDailyModules();updateHeader();renderSelector();});
 }
 </script>
 </body>
