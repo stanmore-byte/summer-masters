@@ -942,11 +942,15 @@ function renderDailyModules(){
   }
 
   // ── SUMMER SCHEDULE STRIP (week-grouped, scaled 30%) ──
-  function getMonKey(ds){var d=new Date(ds+'T12:00:00');var day=d.getDay();var m=new Date(d);m.setDate(d.getDate()+(day===0?-6:1-day));return m.toISOString().split('T')[0];}
+  function getMonKey(ds,monthBased){
+    var d=new Date(ds+'T12:00:00');
+    if(monthBased){return d.getFullYear()+'-'+d.getMonth()+'-w'+Math.ceil(d.getDate()/7);}
+    var day=d.getDay();var m=new Date(d);m.setDate(d.getDate()+(day===0?-6:1-day));return m.toISOString().split('T')[0];
+  }
   var stripHtml='<div class="summer-strip" id="summer-strip">';
-  var lastWeekKey=null,lastMonth=-1,openWeek=false,monthWeekCtr=0;
+  var lastWeekKey=null,lastMonth=-1,openWeek=false,monthWeekCtr=0,useMonthBased=false;
   summerDays.forEach(function(ds){
-    var dateObj=new Date(ds+'T12:00:00'),month=dateObj.getMonth(),weekKey=getMonKey(ds);
+    var dateObj=new Date(ds+'T12:00:00'),month=dateObj.getMonth(),weekKey=getMonKey(ds,useMonthBased);
     var isSel=ds===selDay,isToday=ds===today,isFutureD=ds>today;
     var complete=isDayComplete(state.current,ds),partial=isDayPartial(state.current,ds);
     var jugEntry=jd.log.find(function(e){return e.date===ds;});
@@ -954,7 +958,7 @@ function renderDailyModules(){
     if(month!==lastMonth&&lastMonth!==-1){
       if(openWeek){stripHtml+='</div></div>';openWeek=false;}
       stripHtml+='<div class="sum-month-sep"></div>';
-      lastWeekKey=null;monthWeekCtr=0;
+      lastWeekKey=null;monthWeekCtr=0;useMonthBased=true;
     }
     lastMonth=month;
     if(weekKey!==lastWeekKey){
