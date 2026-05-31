@@ -2079,17 +2079,12 @@ function mergeFromSheets(n,d){
     }
     if(changed)localStorage.setItem(getDailyKey(n),JSON.stringify(h));
   }
-  if(d.juggling&&d.juggling.log){
-    var sheetLog=d.juggling.log||[];
-    var local=getJugData(n);
-    sheetLog.forEach(function(se){
-      var idx=local.log.findIndex(function(l){return l.date===se.date;});
-      if(idx>=0){local.log[idx].count=se.count;}  // Sheets overwrites local for same date
-      else{local.log.push(se);}                    // new date from Sheets
-    });
-    local.log.sort(function(a,b){return b.date.localeCompare(a.date);});
-    local.pr=local.log.reduce(function(mx,e){return Math.max(mx,e.count);},0);
-    saveJugData(n,local);
+  if(d.juggling){
+    if(d.juggling.log&&d.juggling.log.length>0){
+      // Sheets has entries — use as complete authoritative record (removes stale local data)
+      saveJugData(n,{pr:d.juggling.pr||0,log:d.juggling.log});
+    }
+    // If Sheets log is empty, keep localStorage (player may not have synced yet)
   }
   if(d.cde&&d.cde.length){
     var localCDE=getCDEJournal(n);
