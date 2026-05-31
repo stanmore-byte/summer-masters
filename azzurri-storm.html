@@ -1964,7 +1964,10 @@ function switchTab(tab, btn){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
-  if(tab==='team') renderTeam();
+  if(tab==='team'){
+    renderTeam(); // instant render with local data
+    sheetsLoadAll(function(){renderTeam();}); // re-render with live Sheets data
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -2038,6 +2041,30 @@ function sheetsLoad(playerName,onDone){
 function flushSyncQueue(){
   while(_syncQueue.length)sheetsPost(_syncQueue.shift());
 }
+function sheetsLoadAll(onDone){
+  if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0){if(onDone)onDone();return;}
+  var cbName='_scAll'+Date.now();
+  var script=document.createElement('script');
+  var done=false;
+  var timer=setTimeout(function(){
+    if(!done){done=true;if(onDone)onDone();}
+  },12000);
+  window[cbName]=function(resp){
+    if(done)return;done=true;clearTimeout(timer);
+    try{document.head.removeChild(script);}catch(e){}
+    delete window[cbName];
+    if(resp&&resp.ok&&resp.data){
+      Object.keys(resp.data).forEach(function(pName){
+        mergeFromSheets(pName,resp.data[pName]);
+      });
+    }
+    if(onDone)onDone();
+  };
+  script.onerror=function(){if(!done){done=true;clearTimeout(timer);if(onDone)onDone();}};
+  script.src=SHEETS_URL+'?team='+TEAM_ID+'&all=1&callback='+cbName;
+  document.head.appendChild(script);
+}
+
 
 function mergeFromSheets(n,d){
   if(d.daily&&Object.keys(d.daily).length){
@@ -2052,10 +2079,13 @@ function mergeFromSheets(n,d){
     }
     if(changed)localStorage.setItem(getDailyKey(n),JSON.stringify(h));
   }
-  if(d.juggling&&d.juggling.log&&d.juggling.log.length){
+  if(d.juggling&&d.juggling.log){
+    var sheetLog=d.juggling.log||[];
     var local=getJugData(n);
-    d.juggling.log.forEach(function(e){
-      if(!local.log.find(function(l){return l.date===e.date;}))local.log.push(e);
+    sheetLog.forEach(function(se){
+      var idx=local.log.findIndex(function(l){return l.date===se.date;});
+      if(idx>=0){local.log[idx].count=se.count;}  // Sheets overwrites local for same date
+      else{local.log.push(se);}                    // new date from Sheets
     });
     local.log.sort(function(a,b){return b.date.localeCompare(a.date);});
     local.pr=local.log.reduce(function(mx,e){return Math.max(mx,e.count);},0);
