@@ -1583,6 +1583,7 @@ function decodeProgress(code){
 // ══════════════════════════════════════════════
 function renderSelector(){
   var grid=document.getElementById('player-grid');
+  var today=pacificTodayStr();
   var allPRs=PLAYERS.map(function(p){return{name:p.name,pr:getJugData(p.name).pr};});
   var maxPR=Math.max.apply(null,allPRs.map(function(x){return x.pr;}));
   var topJugglers=maxPR>0?allPRs.filter(function(x){return x.pr===maxPR;}).map(function(x){return x.name;}):[]; 
@@ -1595,20 +1596,51 @@ function renderSelector(){
     if(ja)return -1;if(jb)return 1;return 0;
   });
   grid.innerHTML=sorted.map(function(p){
-    var done=drillsDone(p.name),pct=Math.round(done/41*100);
-    var nick=getDisplayName(p.name),jersey=getJerseyNum(p.name);
-    var custColor=getPlayerColor(p.name),avColor=custColor||p.color;
+    var nick=getDisplayName(p.name);
+    var jersey=getJerseyNum(p.name);
+    var custColor=getPlayerColor(p.name);
+    var avColor=custColor||p.color;
     var avContent=jersey?jersey:p.name.charAt(0).toUpperCase();
-    var isTopJug=topJugglers.indexOf(p.name)>-1,isTopStreak=topStreakers.indexOf(p.name)>-1;
+    var isTopJug=topJugglers.indexOf(p.name)>-1;
+    var isTopStreak=topStreakers.indexOf(p.name)>-1;
     var badges=(isTopJug?'<div class="pc-badge pc-badge-jug">🏆 Juggling Record</div>':'')
               +(isTopStreak?'<div class="pc-badge pc-badge-streak">🔥 Longest Streak</div>':'');
+
+    // Real progress: today's BS+ST and overall streak
+    var myBS=getPlayerBallSkills(p.name);
+    var myST=getPlayerStrength(p.name);
+    var todayData=getDayData(p.name,today);
+    var bsDone=todayData.bs.length,stDone=todayData.st.length;
+    var totalItems=myBS.length+myST.length;
+    var todayDone=bsDone+stDone;
+    var todayPct=totalItems>0?Math.round(todayDone/totalItems*100):0;
+    var streak=getStreak(p.name);
+
+    // Status label
+    var statusLabel,statusColor;
+    if(isDayComplete(p.name,today)){
+      statusLabel='✅ Complete today';statusColor='#22C55E';
+    }else if(todayDone>0){
+      statusLabel='⚡ '+todayDone+'/'+totalItems+' done today';statusColor='#FFD700';
+    }else if(streak>0){
+      statusLabel='🔥 '+streak+' day streak';statusColor='#FF8C00';
+    }else{
+      // Check if they have ANY history at all
+      var hist=getDailyHistory(p.name);
+      var hasPast=Object.keys(hist).length>0;
+      var jugPR=getJugData(p.name).pr;
+      statusLabel=hasPast||jugPR>0?'Active this summer':'Not started yet';
+      statusColor='rgba(255,255,255,.35)';
+    }
+
     return '<div class="pc" onclick="selectPlayer(\''+p.name+'\')">'
       +'<div class="pc-av" style="background:'+avColor+'">'+avContent+'</div>'
       +'<div class="pc-name">'+nick+'</div>'
       +(jersey?'<div class="pc-jersey-badge">#'+jersey+'</div>':'')
       +badges
-      +'<div class="pc-bar-wrap"><div class="pc-bar" style="width:'+pct+'%;background:'+avColor+'"></div></div>'
-      +'<div class="pc-done">'+(done>0?done+'/41 drills':'Not started')+'</div></div>';
+      +'<div class="pc-bar-wrap"><div class="pc-bar" style="width:'+todayPct+'%;background:'+avColor+'"></div></div>'
+      +'<div class="pc-done" style="color:'+statusColor+'">'+statusLabel+'</div>'
+      +'</div>';
   }).join('');
 }
 function updatePlayerCard(name){
