@@ -81,6 +81,15 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#00
 .card-u13::before{background:linear-gradient(135deg,rgba(0,229,255,.07),rgba(0,180,216,.05))}
 .card-u13:hover{border-color:rgba(0,229,255,.5);background:rgba(0,229,255,.06)}
 
+/* Friends card – gold/green */
+.card-friends{border-color:rgba(34,197,94,.22)}
+.card-friends::before{background:linear-gradient(135deg,rgba(34,197,94,.07),rgba(16,185,129,.05))}
+.card-friends:hover{border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.06)}
+.card-friends .card-icon{background:linear-gradient(135deg,#22C55E,#16A34A)}
+.card-friends .card-name{color:#22C55E}
+.card-friends .card-cta{background:rgba(34,197,94,.12);color:#22C55E}
+.card-friends:hover .card-cta{background:rgba(34,197,94,.22)}
+
 .card-header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
 .card-icon{
   width:48px;height:48px;border-radius:12px;
@@ -204,6 +213,18 @@ footer{
     </div>
     <p class="card-desc">Track your body feint progress, earn badges, and see where you rank on the team leaderboard.</p>
     <span class="card-cta">Open Tracker <span class="card-cta-arrow">→</span></span>
+  </a>
+
+  <a class="card card-friends" href="friends.html">
+    <div class="card-header">
+      <div class="card-icon">🌟</div>
+      <div>
+        <div class="card-name">Friends of the Program</div>
+        <div class="card-label">Open Enrollment</div>
+      </div>
+    </div>
+    <p class="card-desc">Siblings, friends &amp; training partners — register yourself and follow the same summer program alongside both teams.</p>
+    <span class="card-cta">Join &amp; Track <span class="card-cta-arrow">→</span></span>
   </a>
 
 </div>
