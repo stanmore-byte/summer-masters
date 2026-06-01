@@ -2016,7 +2016,7 @@ function sheetsLoad(playerName,onDone){
     if(onDone)onDone();
   };
   script.onerror=function(){if(!done){done=true;clearTimeout(timer);if(onDone)onDone();}};
-  script.src=SHEETS_URL+'?team='+TEAM_ID+'&player='+encodeURIComponent(playerName)+'&callback='+cbName;
+  script.src=SHEETS_URL+'?team='+TEAM_ID+'&player='+encodeURIComponent(playerName)+'&callback='+cbName+'&_t='+Date.now();
   document.head.appendChild(script);
 }
 
@@ -2043,7 +2043,7 @@ function sheetsLoadAll(onDone){
     if(onDone)onDone();
   };
   script.onerror=function(){if(!done){done=true;clearTimeout(timer);if(onDone)onDone();}};
-  script.src=SHEETS_URL+'?team='+TEAM_ID+'&all=1&callback='+cbName;
+  script.src=SHEETS_URL+'?team='+TEAM_ID+'&all=1&callback='+cbName+'&_t='+Date.now();
   document.head.appendChild(script);
 }
 
