@@ -2051,41 +2051,60 @@ function sheetsLoadAll(onDone){
 
 
 function mergeFromSheets(n,d){
-  if(d.daily&&Object.keys(d.daily).length){
-    var h=getDailyHistory(n),changed=false;
-    for(var date in d.daily){
-      var sd=d.daily[date],ld=h[date]||{bs:[],st:[]};
-      var mbs=Array.from(new Set((ld.bs||[]).concat(sd.bs||[])));
-      var mst=Array.from(new Set((ld.st||[]).concat(sd.st||[])));
-      if(!h[date]||mbs.length!==(ld.bs||[]).length||mst.length!==(ld.st||[]).length){
-        h[date]={bs:mbs,st:mst};changed=true;
-      }
+  // ── SHEETS IS THE SINGLE SOURCE OF TRUTH ──
+  // Every field from Sheets overwrites localStorage.
+  // Only exception: today's in-progress checkmarks are preserved if
+  // Sheets hasn't received the latest write yet.
+
+  // DAILY
+  if(d.daily){
+    var today=pacificTodayStr();
+    var localToday=getDayData(n,today); // snapshot before overwrite
+    if(Object.keys(d.daily).length>0){
+      // Sheets wins — replace entire daily history
+      localStorage.setItem(getDailyKey(n),JSON.stringify(d.daily));
     }
-    if(changed)localStorage.setItem(getDailyKey(n),JSON.stringify(h));
-  }
-  if(d.juggling){
-    if(d.juggling.log&&d.juggling.log.length>0){
-      // Sheets has entries — use as complete authoritative record (removes stale local data)
-      saveJugData(n,{pr:d.juggling.pr||0,log:d.juggling.log});
+    // If today isn't in Sheets yet but player has local progress, keep it
+    if(!d.daily[today]&&(localToday.bs.length>0||localToday.st.length>0)){
+      var h=getDailyHistory(n);
+      h[today]=localToday;
+      localStorage.setItem(getDailyKey(n),JSON.stringify(h));
     }
-    // If Sheets log is empty, keep localStorage (player may not have synced yet)
   }
-  if(d.cde&&d.cde.length){
+
+  // JUGGLING — Sheets is authoritative if it has any data
+  if(d.juggling&&d.juggling.log&&d.juggling.log.length>0){
+    saveJugData(n,{pr:d.juggling.pr||0,log:d.juggling.log});
+  }
+
+  // CDE JOURNAL — Sheets is authoritative; re-attach local photos (never stored in Sheets)
+  if(d.cde&&d.cde.length>0){
     var localCDE=getCDEJournal(n);
-    d.cde.forEach(function(e){
-      if(!localCDE.find(function(l){return String(l.id)===String(e.id);}))localCDE.push(e);
+    var merged=d.cde.map(function(se){
+      var local=localCDE.find(function(l){return String(l.id)===String(se.id);});
+      return{id:se.id,date:se.date,text:se.text,photo:local?local.photo:null};
     });
-    localCDE.sort(function(a,b){return Number(b.id)-Number(a.id);});
-    saveCDEJournal(n,localCDE);
+    // Keep any local entries not yet synced to Sheets (written today)
+    localCDE.forEach(function(le){
+      if(!merged.find(function(m){return String(m.id)===String(le.id);})){
+        merged.unshift(le);
+      }
+    });
+    merged.sort(function(a,b){return Number(b.id)-Number(a.id);});
+    saveCDEJournal(n,merged);
   }
-  if(d.profile&&(d.profile.nickname||d.profile.number||d.profile.color)){
+
+  // PROFILE — Sheets wins for any field it has
+  if(d.profile){
     var lp=getProfile(n);
-    if(d.profile.nickname&&!lp.nickname)lp.nickname=d.profile.nickname;
-    if(d.profile.number&&!lp.number)lp.number=d.profile.number;
-    if(d.profile.color&&!lp.color)lp.color=d.profile.color;
+    if(d.profile.nickname)lp.nickname=d.profile.nickname;
+    if(d.profile.number)lp.number=d.profile.number;
+    if(d.profile.color)lp.color=d.profile.color;
     saveProfile(n,lp);
   }
-  if(d.plans&&!localStorage.getItem(getPlanKey(n))){
+
+  // PLANS — Sheets wins
+  if(d.plans){
     localStorage.setItem(getPlanKey(n),JSON.stringify(d.plans));
   }
 }
