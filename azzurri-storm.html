@@ -2069,39 +2069,60 @@ function sheetsLoadAll(onDone){
 }
 
 
+
+function normDate(raw){
+  if(!raw)return'';
+  // Already YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;
+  // Google Sheets long format: "Mon Jun 01 2026 00:00:00 GMT-0400 ..."
+  try{
+    var d=new Date(raw);
+    if(!isNaN(d.getTime())){
+      var y=d.getFullYear();
+      var m=String(d.getMonth()+1).padStart(2,'0');
+      var day=String(d.getDate()).padStart(2,'0');
+      return y+'-'+m+'-'+day;
+    }
+  }catch(e){}
+  return raw;
+}
+
 function mergeFromSheets(n,d){
   // ── SHEETS IS THE SINGLE SOURCE OF TRUTH ──
   // Every field from Sheets overwrites localStorage.
   // Only exception: today's in-progress checkmarks are preserved if
   // Sheets hasn't received the latest write yet.
 
-  // DAILY
-  if(d.daily){
-    var today=pacificTodayStr();
-    var localToday=getDayData(n,today); // snapshot before overwrite
-    if(Object.keys(d.daily).length>0){
-      // Sheets wins — replace entire daily history
-      localStorage.setItem(getDailyKey(n),JSON.stringify(d.daily));
+  // DAILY — normalize date keys (handles both YYYY-MM-DD and long Sheets date format)
+  if(d.daily&&Object.keys(d.daily).length>0){
+    var h=getDailyHistory(n);
+    for(var rawDate in d.daily){
+      var date=normDate(rawDate);
+      if(!date)continue;
+      var sd=d.daily[rawDate],ld=h[date]||{bs:[],st:[]};
+      h[date]={
+        bs:Array.from(new Set((ld.bs||[]).concat(sd.bs||[]))),
+        st:Array.from(new Set((ld.st||[]).concat(sd.st||[])))
+      };
     }
-    // If today isn't in Sheets yet but player has local progress, keep it
-    if(!d.daily[today]&&(localToday.bs.length>0||localToday.st.length>0)){
-      var h=getDailyHistory(n);
-      h[today]=localToday;
-      localStorage.setItem(getDailyKey(n),JSON.stringify(h));
-    }
+    localStorage.setItem(getDailyKey(n),JSON.stringify(h));
   }
 
-  // JUGGLING — Sheets is authoritative if it has any data
+  // JUGGLING — normalize dates and use Sheets as authoritative
   if(d.juggling&&d.juggling.log&&d.juggling.log.length>0){
-    saveJugData(n,{pr:d.juggling.pr||0,log:d.juggling.log});
+    var jugLog=d.juggling.log.map(function(e){
+      return{date:normDate(e.date),count:e.count};
+    }).filter(function(e){return e.date;});
+    var jugPR=jugLog.reduce(function(mx,e){return Math.max(mx,e.count);},0);
+    saveJugData(n,{pr:jugPR,log:jugLog});
   }
 
-  // CDE JOURNAL — Sheets is authoritative; re-attach local photos (never stored in Sheets)
+  // CDE JOURNAL — normalize dates, re-attach local photos
   if(d.cde&&d.cde.length>0){
     var localCDE=getCDEJournal(n);
     var merged=d.cde.map(function(se){
       var local=localCDE.find(function(l){return String(l.id)===String(se.id);});
-      return{id:se.id,date:se.date,text:se.text,photo:local?local.photo:null};
+      return{id:se.id,date:normDate(se.date)||se.date,text:se.text,photo:local?local.photo:null};
     });
     // Keep any local entries not yet synced to Sheets (written today)
     localCDE.forEach(function(le){
