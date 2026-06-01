@@ -768,9 +768,10 @@ function saveDayData(n,ds,data){var h=getDailyHistory(n);h[ds]=data;localStorage
 function isDayComplete(n,ds){var d=getDayData(n,ds);var bs=getPlayerBallSkills(n);var st=getPlayerStrength(n);return d.bs.length===bs.length&&d.st.length===st.length;}
 function isDayPartial(n,ds){var d=getDayData(n,ds);return(d.bs.length+d.st.length)>0&&!isDayComplete(n,ds);}
 function getStreak(n){
-  var streak=0;var d=new Date();
+  var streak=0;
+  var base=new Date(pacificTodayStr()+'T12:00:00');
   for(var i=0;i<100;i++){
-    var ds=new Date(d.getTime()-i*86400000).toISOString().split('T')[0];
+    var ds=new Date(base.getTime()-i*86400000).toISOString().split('T')[0];
     if(isDayComplete(n,ds))streak++;else break;
   }
   return streak;
@@ -791,8 +792,9 @@ function getJugStreak(n){
   var jd=getJugData(n);
   var dates=jd.log.map(function(e){return e.date;});
   var streak=0;
+  var base=new Date(pacificTodayStr()+'T12:00:00');
   for(var i=0;i<365;i++){
-    var ds=new Date(new Date().getTime()-i*86400000).toISOString().split('T')[0];
+    var ds=new Date(base.getTime()-i*86400000).toISOString().split('T')[0];
     if(dates.indexOf(ds)>-1){streak++;}else{break;}
   }
   return streak;
