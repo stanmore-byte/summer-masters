@@ -207,7 +207,8 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#000;color:#ff
 .day-status{font-weight:700;color:rgba(255,255,255,.45)}
 .done-status{color:#27ae60!important}
 .partial-status{color:#FFD700!important}
-.future-item{opacity:.45;cursor:default}
+.future-item{opacity:.28;cursor:default;pointer-events:none}
+.past-item{opacity:1;cursor:default;pointer-events:none}
 .daily-body{display:none;padding:8px 4px 2px}
 .daily-body.open{display:block}
 .daily-item{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}
@@ -1029,7 +1030,7 @@ function renderDailyModules(){
       var isDoneItem=arr.indexOf(item.id)>-1;
       var editable=isToday;
       var clickAttr=editable?' onclick="toggleDailyItem(\''+type+'\',\''+item.id+'\',\''+selDay+'\')"':'';
-      html+='<div class="daily-item'+(isDoneItem?' done':'')+((!editable)?' future-item':'')+'"'+clickAttr+'>'
+      html+='<div class="daily-item'+(isDoneItem?' done':'')+(isPast?' past-item':(!editable?' future-item':''))+'"'+clickAttr+'>'
         +'<div class="daily-cb"><div class="daily-cb-inner"></div></div>'
         +'<div class="daily-item-name-wrap"><span class="daily-item-name">'+item.name+'</span><span class="daily-item-target">'+item.target+'</span></div>'
         +'</div>';
