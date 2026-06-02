@@ -2008,7 +2008,7 @@ function sheetsPost(payload){
   try{
     fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
       body:JSON.stringify(payload)
-    }).catch(function(){_syncQueue.push(payload);});
+    },{cache: "no-store"}).catch(function(){_syncQueue.push(payload);});
   }catch(e){_syncQueue.push(payload);}
 }
 
