@@ -1872,7 +1872,13 @@ function renderTeam(){
     return b.jugPR-a.jugPR;
   });
 
-  var html='<div class="lb-page-title">🏆 Leaderboard</div>';
+  var _lastSync=_lastSync||null;
+  var syncAge=_lastSync?Math.round((Date.now()-_lastSync)/1000)+'s ago':'never';
+  var html='<div class="lb-page-title" style="display:flex;align-items:center;justify-content:space-between">'
+    +'<span>🏆 Leaderboard</span>'
+    +'<button onclick="refreshLeaderboard()" style="background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.3);color:#0EA5E9;font-size:.7em;font-weight:700;padding:4px 10px;border-radius:8px;cursor:pointer;letter-spacing:.04em" id="lb-refresh-btn">↻ Sync</button>'
+    +'</div>'
+    +'<div id="lb-sync-time" style="font-size:.65em;color:rgba(255,255,255,.22);margin:-8px 0 10px;text-align:right">Last synced: '+syncAge+'</div>';
   players.forEach(function(p,i){
     var isMe=p.name===state.current;
     var m=medal(i);
@@ -1949,6 +1955,10 @@ function switchTab(tab, btn){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='training'){
+    renderDailyModules();
+    sheetsLoad(state.current,function(){renderDailyModules();updateHeader();});
+  }
   if(tab==='team'){
     renderTeam(); // instant render with local data
     sheetsLoadAll(function(){renderTeam();}); // re-render with live Sheets data
