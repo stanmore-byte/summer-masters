@@ -1099,7 +1099,8 @@ function renderDailyModules(){
     +'<div class="cde-log-hdr">'+(cdeEntries.length?cdeEntries.length+' entr'+(cdeEntries.length===1?'y':'ies')+' logged':'')+'</div>'
     +cdeEntriesHtml+'</div>';
 
-el.innerHTML=streakHtml+stripHtml+dayViewHtml+jugPanel+bsSection+stSection+cdePanel;
+var refreshBarHtml='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><button id="refresh-btn" onclick="refreshProgress()" style="background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.3);color:#0EA5E9;font-size:.75em;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer">&#8635; Refresh Progress</button><span id="sync-status" style="font-size:.65em;color:rgba(255,255,255,.3)"></span></div>';
+  el.innerHTML=refreshBarHtml+streakHtml+stripHtml+dayViewHtml+jugPanel+bsSection+stSection+cdePanel;
   (function(){
     var strip=document.getElementById('summer-strip');
     var track=document.getElementById('sum-track');
@@ -1613,6 +1614,7 @@ function registerPlayer(){
   if(existing){showToast('Welcome back, '+name+'!');selectPlayer(existing.name);return;}
   var color=AVATAR_COLORS[roster.length%AVATAR_COLORS.length];
   roster.push({name:name,color:color});saveRoster(roster);refreshPlayers();
+  sheetsPost({team:TEAM_ID,player:name,type:'profile',data:{nickname:'',number:'',color:color}});
   if(inp)inp.value='';
   showToast('Welcome to the program, '+name+'! 🎉');selectPlayer(name);
 }
@@ -2140,6 +2142,59 @@ function mergeFromSheets(n,d){
   if(d.plans){
     localStorage.setItem(getPlanKey(n),JSON.stringify(d.plans));
   }
+}
+
+
+// ── SYNC ENGINE ───────────────────────────────
+var _pollTimer=null,_lastSyncMs=null,_syncPending=0;
+
+function startAutoSync(){
+  stopAutoSync();
+  _pollTimer=setInterval(function(){
+    if(state.current){
+      sheetsLoad(state.current,function(){
+        renderDailyModules();updateHeader();setSyncStatus('Auto-synced','#22C55E');
+      });
+    }
+  },60000);
+}
+function stopAutoSync(){if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}}
+
+function setSyncStatus(msg,color){
+  var el=document.getElementById('sync-status');
+  if(!el)return;
+  el.textContent=msg;el.style.color=color||'rgba(255,255,255,.3)';
+}
+
+function refreshProgress(){
+  var btn=document.getElementById('refresh-btn');
+  if(btn){btn.textContent='↻ Syncing…';btn.disabled=true;}
+  sheetsLoad(state.current,function(){
+    renderDailyModules();updateHeader();
+    setSyncStatus('✓ Synced','#22C55E');
+    setTimeout(function(){setSyncStatus('');},3000);
+    if(btn){btn.textContent='↻ Refresh Progress';btn.disabled=false;}
+  });
+}
+
+function initSheetsRetry(){
+  var _orig=sheetsPost;
+  sheetsPost=function(payload){
+    if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0)return;
+    setSyncStatus('Saving…','#FFD700');
+    function attempt(n){
+      try{fetch(SHEETS_URL,{method:'POST',mode:'no-cors',
+        headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)
+      }).then(function(){
+        setSyncStatus('Saved ✓','#22C55E');
+        setTimeout(function(){setSyncStatus('');},2000);
+      }).catch(function(){
+        if(n>0){setTimeout(function(){attempt(n-1);},3000);}
+        else{_syncQueue.push(payload);setSyncStatus('Queued','rgba(255,140,0,.8)');}
+      });}catch(e){_syncQueue.push(payload);}
+    }
+    attempt(2);
+  };
 }
 
 // ══════════════════════════════════════════════
