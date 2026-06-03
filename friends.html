@@ -2200,6 +2200,18 @@ function initSheetsRetry(){
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
+// Seed known participants so they appear instantly before Sheets loads
+(function(){
+  var known=['Theodore','Thomas','Samuel','Theo','Ellianah'];
+  var roster=getRoster();var changed=false;
+  known.forEach(function(name){
+    if(!roster.find(function(p){return p.name===name;})){
+      roster.push({name:name,color:AVATAR_COLORS[roster.length%AVATAR_COLORS.length]});
+      changed=true;
+    }
+  });
+  if(changed)saveRoster(roster);
+})();
 loadState();refreshPlayers();renderSelector();
 if(state.current){
   showApp();
