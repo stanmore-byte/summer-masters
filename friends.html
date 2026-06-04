@@ -470,6 +470,24 @@ body{background:var(--az-dark);}
 .lb-mini-bar-wrap{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:5px;overflow:hidden}
 .lb-mini-bar{height:100%;border-radius:2px}
 .lb-page-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+
+/* ── SUMMER CONSISTENCY BAR ── */
+.overall-bar{background:rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.sc-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.sc-title{font-size:.72em;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:#0EA5E9}
+.sc-countdown{font-size:.72em;font-weight:700;color:rgba(255,255,255,.45)}
+.sc-countdown span{color:#FFD700;font-weight:900}
+.sc-bar-wrap{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:1px;margin-bottom:8px;background:rgba(255,255,255,.06)}
+.sc-seg-active{background:#0EA5E9;border-radius:2px;transition:width .5s}
+.sc-seg-inactive{background:rgba(255,255,255,.12);border-radius:2px}
+.sc-seg-future{flex:1;background:transparent}
+.sc-stats{display:flex;justify-content:space-between;align-items:center}
+.sc-stat-main{font-size:.82em;font-weight:800;color:#fff}
+.sc-stat-main span{color:#0EA5E9}
+.sc-stat-pct{font-size:.75em;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(14,165,233,.14);color:#0EA5E9}
+.sc-stat-pct.great{background:rgba(34,197,94,.14);color:#22C55E}
+.sc-stat-pct.ok{background:rgba(255,215,0,.14);color:#FFD700}
+
 </style>
 </head>
 <body>
@@ -536,10 +554,7 @@ body{background:var(--az-dark);}
 
   <!-- MY TRAINING TAB -->
   <div class="tab-pane active" id="tab-training">
-    <div class="overall-bar">
-      <div class="ob-row"><span>Overall Progress</span><span id="ob-label"></span></div>
-      <div class="ob-track"><div class="ob-fill" id="ob-fill" style="width:0%"></div></div>
-    </div>
+    <div class="overall-bar" id="overall-bar-container"></div>
     <div id="daily-modules" class="daily-modules-wrap"></div>
     <div id="drill-list"></div>
   </div>
@@ -770,8 +785,10 @@ function isDayComplete(n,ds){var d=getDayData(n,ds);var bs=getPlayerBallSkills(n
 function isDayPartial(n,ds){var d=getDayData(n,ds);return(d.bs.length+d.st.length)>0&&!isDayComplete(n,ds);}
 function getStreak(n){
   var streak=0;
+  // Start from YESTERDAY — today is ongoing so doesn't count toward streak yet
   var base=new Date(pacificTodayStr()+'T12:00:00');
-  for(var i=0;i<100;i++){
+  base.setDate(base.getDate()-1);
+  for(var i=0;i<200;i++){
     var ds=new Date(base.getTime()-i*86400000).toISOString().split('T')[0];
     if(isDayComplete(n,ds))streak++;else break;
   }
@@ -794,6 +811,7 @@ function getJugStreak(n){
   var dates=jd.log.map(function(e){return e.date;});
   var streak=0;
   var base=new Date(pacificTodayStr()+'T12:00:00');
+  base.setDate(base.getDate()-1); // start from yesterday
   for(var i=0;i<365;i++){
     var ds=new Date(base.getTime()-i*86400000).toISOString().split('T')[0];
     if(dates.indexOf(ds)>-1){streak++;}else{break;}
@@ -858,7 +876,7 @@ function buildJugChart(jd,today){
     +(pr>0?'<text x="2" y="'+(prLineY+10)+'" font-size="8" fill="rgba(255,215,0,.45)" font-weight="700">PR '+pr+'</text>':'')
     +bars+'</svg></div>';
 }
-function selectDay(ds){state.selDay=ds;renderDailyModules();}
+function selectDay(ds){state.selDay=ds;state._dayManuallySelected=true;renderDailyModules();}
 function getJugData(n){
   try{return JSON.parse(localStorage.getItem(getJugKey(n))||'{"pr":0,"log":[]}');}
   catch(e){return{pr:0,log:[]};}
@@ -939,11 +957,10 @@ function renderDailyModules(){
     streakHtml='<div class="streak-bar"><span class="streak-fire">🔥</span><span class="streak-num">'+streak+'</span><span class="streak-lbl"> day streak</span>'+(bestStreak>streak?'<span class="streak-best">Best: '+bestStreak+'</span>':'')+'</div>';
   }
 
-  var selDay=state.selDay;
-  if(!selDay||selDay<PROGRAM_START||selDay>PROGRAM_END){
-    selDay=(today>=PROGRAM_START&&today<=PROGRAM_END)?today:PROGRAM_END<today?PROGRAM_END:PROGRAM_START;
-    state.selDay=selDay;
-  }
+  // Always default to today; preserve only if user explicitly selected a different day this session
+  var selDay=pacificTodayStr();
+  if(state.selDay&&state.selDay!==selDay&&state._dayManuallySelected){selDay=state.selDay;}
+  else{state.selDay=selDay;state._dayManuallySelected=false;}
 
   // ── SUMMER SCHEDULE STRIP (week-grouped, scaled 30%) ──
   function getMonKey(ds,monthBased){
@@ -1003,8 +1020,10 @@ function renderDailyModules(){
   var statusLabel=complete?'✅ Complete':partial?'⚡ Partial':isToday?'○ Not started yet':'○ Not started';
   var statusCls=complete?' done-status':partial?' partial-status':'';
   var lockNote=isPast?' <span style="font-size:.68em;color:rgba(255,255,255,.22)">🔒 locked</span>':'';
-  var dayViewHtml='<div class="day-viewing">'+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][selDate.getDay()]+' '
-    +selDay+'<span class="day-status'+statusCls+'"> '+statusLabel+'</span>'+lockNote+'</div>';
+  var MONTH_FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var dayViewHtml=isToday
+    ?'<div class="day-viewing today-msg">Today is <strong>'+MONTH_FULL[selDate.getMonth()]+' '+selDate.getDate()+', '+selDate.getFullYear()+'</strong> — do the work and keep your streak alive!</div>'
+    :'<div class="day-viewing">'+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][selDate.getDay()]+' '+selDay+'<span class="day-status'+statusCls+'"> '+statusLabel+'</span>'+lockNote+'</div>';
 
   function buildSection(type,icon,title,items){
     var arr=type==='bs'?dayData.bs:dayData.st;
@@ -1694,8 +1713,8 @@ function renderTraining(){
   const done = drillsDone(state.current);
   const pct = Math.round(done/41*100);
 
-  document.getElementById('ob-fill').style.width = pct+'%';
-  document.getElementById('ob-label').textContent = done + ' / 41 drills — ' + pct + '%';
+  
+  
 
   // Group drills by week
   const weeks = [1,2,3];
@@ -1872,6 +1891,7 @@ function renderTeam(){
       latestCDE:latestCDE};
   }).sort(function(a,b){
     if(b.streak!==a.streak)return b.streak-a.streak;
+    if(b.jugStreak!==a.jugStreak)return b.jugStreak-a.jugStreak;
     return b.jugPR-a.jugPR;
   });
 
@@ -1959,12 +1979,16 @@ function switchTab(tab, btn){
   btn.classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
   if(tab==='training'){
-    renderDailyModules();
-    sheetsLoad(state.current,function(){renderDailyModules();updateHeader();});
+    renderDailyModules();renderCoachMsg(state.current);
+    sheetsLoad(state.current,function(){renderDailyModules();updateHeader();renderCoachMsg(state.current);});
   }
   if(tab==='team'){
-    renderTeam(); // instant render with local data
-    sheetsLoadAll(function(){renderTeam();}); // re-render with live Sheets data
+    renderTeam();
+    sheetsLoadAll(function(){renderTeam();});
+  }
+  if(tab==='table'){
+    sheetsLoadAll(function(){renderLeaderboardTable();});
+    renderLeaderboardTable();
   }
 }
 
@@ -2199,6 +2223,190 @@ function initSheetsRetry(){
 
 // ══════════════════════════════════════════════
 //  INIT
+
+function getActiveDays(n){
+  var today=pacificTodayStr();
+  var h=getDailyHistory(n);
+  var jd=getJugData(n);
+  var cde=getCDEJournal(n);
+  var activeDates=new Set();
+  Object.keys(h).forEach(function(date){
+    var d=h[date];
+    if(d&&(d.bs.length>0||d.st.length>0)&&date<=today)activeDates.add(date);
+  });
+  jd.log.forEach(function(e){if(e.date<=today)activeDates.add(e.date);});
+  cde.forEach(function(e){if(e.date&&e.date<=today)activeDates.add(e.date);});
+  return activeDates.size;
+}
+function getSummerStats(){
+  var today=pacificTodayStr();
+  var startDate=new Date(PROGRAM_START+'T12:00:00');
+  var todayDate=new Date(today+'T12:00:00');
+  var endDate=new Date(PROGRAM_END+'T12:00:00');
+  var elapsed=Math.max(0,Math.round((todayDate-startDate)/86400000)+1);
+  var remaining=Math.max(0,Math.round((endDate-todayDate)/86400000));
+  var total=Math.round((endDate-startDate)/86400000)+1;
+  return{elapsed:elapsed,remaining:remaining,total:total,
+         weeksLeft:Math.floor(remaining/7),daysLeft:remaining%7};
+}
+function renderConsistencyBar(playerName){
+  var el=document.getElementById('overall-bar-container');
+  if(!el)return;
+  var stats=getSummerStats();
+  var active=getActiveDays(playerName);
+  var elapsed=stats.elapsed,remaining=stats.remaining,total=stats.total;
+  var pct=elapsed>0?Math.round(active/elapsed*100):0;
+  var pctCls=pct>=80?'great':pct>=50?'ok':'';
+  var wl=stats.weeksLeft,dl=stats.daysLeft;
+  var cdText=remaining===0?'Last day of summer!'
+    :wl>0?(wl+' wk'+(wl!==1?'s':'')+(dl>0?' '+dl+'d':'')+' left')
+    :(remaining+' day'+(remaining!==1?'s':'')+' left');
+  var activePct=total>0?active/total*100:0;
+  var inactivePct=total>0?Math.max(0,(elapsed-active)/total*100):0;
+  el.innerHTML='<div class="sc-header">'
+    +'<span class="sc-title">Summer Consistency</span>'
+    +'<span class="sc-countdown"><span>'+cdText+'</span></span>'
+    +'</div>'
+    +'<div class="sc-bar-wrap">'
+      +'<div class="sc-seg-active" style="width:'+activePct.toFixed(1)+'%"></div>'
+      +'<div class="sc-seg-inactive" style="width:'+inactivePct.toFixed(1)+'%"></div>'
+      +'<div class="sc-seg-future"></div>'
+    +'</div>'
+    +'<div class="sc-stats">'
+      +'<span class="sc-stat-main"><span>'+active+'</span> active days of '+elapsed+' so far</span>'
+      +'<span class="sc-stat-pct '+pctCls+'">'+pct+'% consistent</span>'
+    +'</div>';
+}
+
+
+// ── CHALLENGES ────────────────────────────────────────────────────
+function getChallengeKey(){return STORE_KEY+'_challenges';}
+function getChallenges(){try{return JSON.parse(localStorage.getItem(getChallengeKey())||'[]');}catch(e){return[];}}
+function saveChallenges(ch){localStorage.setItem(getChallengeKey(),JSON.stringify(ch));}
+
+function issueChallenge(targetPlayer){
+  var wrap=document.getElementById('chal-opts-'+targetPlayer.replace(/\s+/g,'-'));
+  if(!wrap)return;
+  var visible=wrap.style.display==='block';
+  // Hide all other open challenge UIs
+  document.querySelectorAll('.lb-challenge-options').forEach(function(el){el.style.display='none';});
+  wrap.style.display=visible?'none':'block';
+}
+
+function sendChallenge(targetPlayer, type){
+  var fromPlayer=state.current;
+  var challenges=getChallenges();
+  // Remove any existing challenge from same person to same target
+  var filtered=challenges.filter(function(ch){return!(ch.from===fromPlayer&&ch.to===targetPlayer);});
+  var jugTarget=type==='juggle'?prompt('Set a juggling target (number):','50'):null;
+  if(type==='juggle'&&(!jugTarget||isNaN(parseInt(jugTarget)))){return;}
+  filtered.push({
+    id:Date.now(),
+    from:fromPlayer,
+    to:targetPlayer,
+    type:type,
+    jugTarget:jugTarget?parseInt(jugTarget):null,
+    date:pacificTodayStr()
+  });
+  saveChallenges(filtered);
+  sheetsPost({team:TEAM_ID,player:fromPlayer,type:'challenge',
+    data:{from:fromPlayer,to:targetPlayer,challengeType:type,jugTarget:jugTarget,date:pacificTodayStr()}});
+  document.querySelectorAll('.lb-challenge-options').forEach(function(el){el.style.display='none';});
+  showToast('Challenge sent to '+targetPlayer+'!');
+  renderTeam();
+}
+
+function getChallengeTo(playerName){
+  var ch=getChallenges();
+  return ch.filter(function(c){return c.to===playerName&&c.date===pacificTodayStr();});
+}
+
+
+// ── COACH MESSAGES ────────────────────────────────────────────────
+function getCoachMsgKey(n){return STORE_KEY+'_coachmsg_'+n.replace(/\s+/g,'_');}
+function getCoachMsg(n){try{return JSON.parse(localStorage.getItem(getCoachMsgKey(n))||'null');}catch(e){return null;}}
+function dismissCoachMsg(n){
+  var msg=getCoachMsg(n);
+  if(msg){msg.seen=true;localStorage.setItem(getCoachMsgKey(n),JSON.stringify(msg));}
+  var el=document.getElementById('coach-msg-banner');
+  if(el){el.style.display='none';}
+}
+function renderCoachMsg(playerName){
+  var msg=getCoachMsg(playerName);
+  var el=document.getElementById('coach-msg-banner');
+  if(!el)return;
+  if(msg&&msg.text&&!msg.seen){
+    el.style.display='block';
+    el.innerHTML='<div class="coach-msg-label">📋 Message from Coach Will</div>'
+      +'<div class="coach-msg-text">'+msg.text+'</div>'
+      +'<button class="coach-msg-seen" onclick="dismissCoachMsg(\''+playerName+'\')">Seen ✓</button>';
+  }else{
+    el.style.display='none';
+  }
+}
+
+
+// ── LEADERBOARD TABLE ─────────────────────────────────────────────
+function getTotalActiveDays(n){
+  var h=getDailyHistory(n);var today=pacificTodayStr();
+  return Object.keys(h).filter(function(d){
+    var day=h[d];return d<=today&&(day.bs.length>0||day.st.length>0);
+  }).length;
+}
+function getJugTrend(n){
+  var jd=getJugData(n);var log=jd.log;
+  if(log.length<2)return 0;
+  return log[0].count-log[1].count;
+}
+function renderLeaderboardTable(){
+  var el=document.getElementById('lb-table-container');
+  if(!el)return;
+  var today=pacificTodayStr();
+  var players=PLAYERS.map(function(p){
+    var jd=getJugData(p.name);
+    var custColor=getPlayerColor(p.name);
+    var avColor=custColor||p.color;
+    return{
+      name:p.name,nick:getDisplayName(p.name),color:avColor,
+      trainingDays:getTotalActiveDays(p.name),
+      streak:getStreak(p.name),
+      jugStreak:getJugStreak(p.name),
+      jugPR:jd.pr,
+      jugTrend:getJugTrend(p.name)
+    };
+  }).sort(function(a,b){
+    if(b.streak!==a.streak)return b.streak-a.streak;
+    if(b.jugStreak!==a.jugStreak)return b.jugStreak-a.jugStreak;
+    return b.jugPR-a.jugPR;
+  });
+
+  var rows=players.map(function(p){
+    var trendHtml=p.jugTrend>0?'<span class="lb-table-trend-up">↑</span>'
+      :p.jugTrend<0?'<span class="lb-table-trend-down">↓</span>'
+      :'<span class="lb-table-trend-same">—</span>';
+    return '<tr>'
+      +'<td><span class="lb-table-name" style="color:'+p.color+'">'+p.nick+'</span></td>'
+      +'<td class="lb-table-num">'+p.trainingDays+'</td>'
+      +'<td class="lb-table-num">'+p.streak+'</td>'
+      +'<td class="lb-table-num">'+p.jugStreak+'</td>'
+      +'<td class="lb-table-num">'+p.jugPR+'</td>'
+      +'<td class="lb-table-num">'+trendHtml+'</td>'
+      +'</tr>';
+  }).join('');
+
+  el.innerHTML='<div class="lb-table-wrap"><table class="lb-table">'
+    +'<thead><tr>'
+    +'<th>Player</th>'
+    +'<th style="text-align:center">Training Days</th>'
+    +'<th style="text-align:center">Day Streak</th>'
+    +'<th style="text-align:center">Juggle Streak</th>'
+    +'<th style="text-align:center">Juggle PR</th>'
+    +'<th style="text-align:center">Trend</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'</table></div>';
+}
+
 // ══════════════════════════════════════════════
 // Seed known participants so they appear instantly before Sheets loads
 (function(){

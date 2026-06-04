@@ -42,6 +42,18 @@ header span{font-size:.75em;color:rgba(255,255,255,.35);margin-left:4px}
 .saved-note.show{opacity:1}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#22C55E;color:#fff;padding:8px 18px;border-radius:18px;font-weight:700;font-size:.85em;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.show{opacity:1}
+
+.coach-msg-section{background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);border-radius:12px;padding:14px 16px;margin-bottom:20px}
+.coach-msg-section h3{font-size:.8em;font-weight:800;color:#0EA5E9;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.coach-player-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.coach-player-sel{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85em;outline:none}
+.coach-msg-inp{flex:2;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:.85em;padding:7px 10px;outline:none;font-family:inherit}
+.coach-send-btn{background:rgba(14,165,233,.2);border:1px solid rgba(14,165,233,.4);color:#0EA5E9;font-weight:800;font-size:.78em;padding:7px 14px;border-radius:8px;cursor:pointer}
+.coach-send-btn:hover{background:rgba(14,165,233,.35)}
+.coach-active-msgs{margin-top:10px}
+.coach-active-msg-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(255,255,255,.04);border-radius:7px;margin-bottom:5px;font-size:.78em}
+.coach-clear-btn{background:none;border:none;color:rgba(255,80,80,.6);cursor:pointer;font-size:.85em}
+
 </style>
 </head>
 <body>
@@ -50,6 +62,20 @@ header span{font-size:.75em;color:rgba(255,255,255,.35);margin-left:4px}
   <h1>Player Activity Plans <span>— admin only</span></h1>
 </header>
 <div class="container" id="container">
+
+<div class="coach-msg-section">
+  <h3>📋 Coach Will Messages</h3>
+  <p style="font-size:.75em;color:rgba(255,255,255,.4);margin-bottom:10px">Send a personal message to any player. It appears at the top of their training page until they tap "Seen".</p>
+  <div class="coach-player-row">
+    <select class="coach-player-sel" id="coach-player-sel">
+      <option value="">— Select player —</option>
+    </select>
+    <input class="coach-msg-inp" id="coach-msg-inp" type="text" placeholder="Message for this player…" maxlength="160" />
+    <button class="coach-send-btn" onclick="sendCoachMsg()">Send</button>
+  </div>
+  <div class="coach-active-msgs" id="coach-active-msgs"></div>
+</div>
+
   <p style="font-size:.82em;color:rgba(255,255,255,.35);padding:10px 0 16px">
     Edit each player's Ball Skills and Strength Training checklist. Changes take effect immediately — historical data is preserved. Avoid changing Activity IDs if the player has already logged data against them.
   </p>
@@ -227,6 +253,76 @@ function init(){
 }
 
 init();
+
+function sendCoachMsg(){
+  var sel=document.getElementById('coach-player-sel');
+  var inp=document.getElementById('coach-msg-inp');
+  var player=sel?sel.value.trim():'';
+  var text=inp?inp.value.trim():'';
+  if(!player||!text){alert('Select a player and enter a message.');return;}
+  // Determine which store key based on player
+  var stormTeam=['Louise','Mia','Audrey','Charlotte','Avi','Annika','Mikayla','Aria','Aubree','Gracie','Amelia','Shailynn','Ellie'];
+  var storeKey=stormTeam.indexOf(player)>=0?'azzurri_storm_v2'
+    :(['Madi','Marie','Susie','Hailey','Reese','Noelle','Kaia','Melissa','Baylor','Caroline','Hannah','Camryn','London','Ellianah'].indexOf(player)>=0?'azzurri_u13_v1':'azzurri_friends_v1');
+  var msgKey=storeKey+'_coachmsg_'+player.replace(/\s+/g,'_');
+  var msg={text:text,from:'Coach Will',date:new Date().toISOString().split('T')[0],seen:false};
+  localStorage.setItem(msgKey,JSON.stringify(msg));
+  inp.value='';
+  renderActiveMessages();
+  alert('Message sent to '+player+'! They will see it next time they open their training page.');
+}
+
+function clearCoachMsg(player,storeKey){
+  if(!confirm('Clear message for '+player+'?'))return;
+  var msgKey=storeKey+'_coachmsg_'+player.replace(/\s+/g,'_');
+  localStorage.removeItem(msgKey);
+  renderActiveMessages();
+}
+
+function renderActiveMessages(){
+  var el=document.getElementById('coach-active-msgs');if(!el)return;
+  var allPlayers=[
+    {name:'Louise',key:'azzurri_storm_v2'},{name:'Mia',key:'azzurri_storm_v2'},
+    {name:'Audrey',key:'azzurri_storm_v2'},{name:'Charlotte',key:'azzurri_storm_v2'},
+    {name:'Avi',key:'azzurri_storm_v2'},{name:'Annika',key:'azzurri_storm_v2'},
+    {name:'Mikayla',key:'azzurri_storm_v2'},{name:'Aria',key:'azzurri_storm_v2'},
+    {name:'Aubree',key:'azzurri_storm_v2'},{name:'Gracie',key:'azzurri_storm_v2'},
+    {name:'Amelia',key:'azzurri_storm_v2'},{name:'Shailynn',key:'azzurri_storm_v2'},
+    {name:'Ellie',key:'azzurri_storm_v2'},
+    {name:'Madi',key:'azzurri_u13_v1'},{name:'Susie',key:'azzurri_u13_v1'},
+    {name:'Hailey',key:'azzurri_u13_v1'},{name:'Reese',key:'azzurri_u13_v1'},
+    {name:'Noelle',key:'azzurri_u13_v1'},{name:'Kaia',key:'azzurri_u13_v1'},
+    {name:'Melissa',key:'azzurri_u13_v1'},{name:'Baylor',key:'azzurri_u13_v1'},
+    {name:'Caroline',key:'azzurri_u13_v1'},{name:'Hannah',key:'azzurri_u13_v1'},
+    {name:'Camryn',key:'azzurri_u13_v1'},{name:'London',key:'azzurri_u13_v1'},
+    {name:'Ellianah',key:'azzurri_friends_v1'},{name:'Theodore',key:'azzurri_friends_v1'},
+    {name:'Thomas',key:'azzurri_friends_v1'},{name:'Samuel',key:'azzurri_friends_v1'},
+    {name:'Theo',key:'azzurri_friends_v1'}
+  ];
+  var active=allPlayers.filter(function(p){
+    var msg=JSON.parse(localStorage.getItem(p.key+'_coachmsg_'+p.name.replace(/\s+/g,'_'))||'null');
+    return msg&&msg.text&&!msg.seen;
+  });
+  if(!active.length){el.innerHTML='<div style="font-size:.75em;color:rgba(255,255,255,.3);padding:4px 0">No active messages</div>';return;}
+  el.innerHTML=active.map(function(p){
+    return '<div class="coach-active-msg-row"><span style="font-weight:700">'+p.name+'</span>: '
+      +JSON.parse(localStorage.getItem(p.key+'_coachmsg_'+p.name.replace(/\s+/g,'_'))).text
+      +'<button class="coach-clear-btn" onclick="clearCoachMsg(''+p.name+'',''+p.key+'')">✕ Clear</button></div>';
+  }).join('');
+}
+
+// Populate player selector
+(function(){
+  var sel=document.getElementById('coach-player-sel');if(!sel)return;
+  var allPlayers=['Louise','Mia','Audrey','Charlotte','Avi','Annika','Mikayla','Aria','Aubree','Gracie','Amelia','Shailynn','Ellie',
+    'Madi','Susie','Hailey','Reese','Noelle','Kaia','Melissa','Baylor','Caroline','Hannah','Camryn','London',
+    'Ellianah','Theodore','Thomas','Samuel','Theo'];
+  allPlayers.forEach(function(n){
+    var opt=document.createElement('option');opt.value=n;opt.textContent=n;sel.appendChild(opt);
+  });
+  renderActiveMessages();
+})();
+
 </script>
 </body>
 </html>
