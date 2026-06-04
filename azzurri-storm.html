@@ -488,6 +488,48 @@ body{background:var(--az-dark);}
 .sc-stat-pct.great{background:rgba(34,197,94,.14);color:#22C55E}
 .sc-stat-pct.ok{background:rgba(255,215,0,.14);color:#FFD700}
 
+
+/* ── LEADERBOARD TABLE — clean greyscale ── */
+.lb-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+.lb-table{width:100%;border-collapse:collapse;font-size:.82em;min-width:420px;background:#0a0a0a}
+.lb-table thead{background:#1a1a1a}
+.lb-table th{padding:10px 8px;text-align:center;font-size:.65em;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.5);border-bottom:2px solid rgba(255,255,255,.15);border-right:1px solid rgba(255,255,255,.06);white-space:normal;word-break:break-word;line-height:1.3}
+.lb-table th:first-child{text-align:left;padding-left:12px}
+.lb-table th:last-child{border-right:none}
+.lb-table td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.07);border-right:1px solid rgba(255,255,255,.04);vertical-align:middle;text-align:center}
+.lb-table td:first-child{text-align:left;padding-left:12px}
+.lb-table td:last-child{border-right:none}
+.lb-table tbody tr:last-child td{border-bottom:none}
+.lb-table tbody tr:nth-child(odd){background:rgba(255,255,255,.015)}
+.lb-table tbody tr:hover td{background:rgba(255,255,255,.05)}
+.lb-table-name{font-weight:700;font-size:1em;color:#fff;letter-spacing:.01em}
+.lb-table-num{font-weight:600;color:rgba(255,255,255,.75)}
+.lb-table-num.leader{color:#fff;font-weight:900}
+.lb-table-trend-up{color:rgba(255,255,255,.9);font-size:1.05em;font-weight:900}
+.lb-table-trend-down{color:rgba(255,255,255,.35);font-size:1.05em;font-weight:900}
+.lb-table-trend-same{color:rgba(255,255,255,.2);font-size:.9em}
+.lb-table-rank{font-size:.7em;font-weight:700;color:rgba(255,255,255,.22);width:18px;display:inline-block;text-align:right;margin-right:6px}
+
+
+/* ── LEADERBOARD TABLE greyscale ── */
+.lb-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+.lb-table{width:100%;border-collapse:collapse;font-size:.82em;min-width:420px;background:#0a0a0a}
+.lb-table thead{background:#1c1c1c}
+.lb-table th{padding:10px 8px;text-align:center;font-size:.63em;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.45);border-bottom:2px solid rgba(255,255,255,.15);border-right:1px solid rgba(255,255,255,.06);white-space:normal;word-break:break-word;line-height:1.3}
+.lb-table th:last-child{border-right:none}
+.lb-table td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.07);border-right:1px solid rgba(255,255,255,.04);vertical-align:middle;text-align:center}
+.lb-table td:first-child{text-align:left;padding-left:12px}
+.lb-table td:last-child{border-right:none}
+.lb-table tbody tr:last-child td{border-bottom:none}
+.lb-table tbody tr:nth-child(odd){background:rgba(255,255,255,.015)}
+.lb-table tbody tr:hover td{background:rgba(255,255,255,.05)}
+.lb-table-name{font-weight:700;font-size:1em;color:#fff}
+.lb-table-num{font-weight:600;color:rgba(255,255,255,.65)}
+.lb-table-num.leader{color:#fff;font-weight:900}
+.lb-table-trend-up{color:rgba(255,255,255,.85);font-size:1em;font-weight:900}
+.lb-table-trend-down{color:rgba(255,255,255,.3);font-size:1em}
+.lb-table-trend-same{color:rgba(255,255,255,.2)}
+
 </style>
 </head>
 <body>
@@ -2382,13 +2424,10 @@ function getJugTrend(n){
 function renderLeaderboardTable(){
   var el=document.getElementById('lb-table-container');
   if(!el)return;
-  var today=pacificTodayStr();
   var players=PLAYERS.map(function(p){
     var jd=getJugData(p.name);
-    var custColor=getPlayerColor(p.name);
-    var avColor=custColor||p.color;
     return{
-      name:p.name,nick:getDisplayName(p.name),color:avColor,
+      name:p.name,nick:getDisplayName(p.name),
       trainingDays:getTotalActiveDays(p.name),
       streak:getStreak(p.name),
       jugStreak:getJugStreak(p.name),
@@ -2400,29 +2439,32 @@ function renderLeaderboardTable(){
     if(b.jugStreak!==a.jugStreak)return b.jugStreak-a.jugStreak;
     return b.jugPR-a.jugPR;
   });
-
+  var maxStreak=players.length>0?players[0].streak:0;
+  var maxPR=Math.max.apply(null,players.map(function(p){return p.jugPR;}));
   var rows=players.map(function(p){
-    var trendHtml=p.jugTrend>0?'<span class="lb-table-trend-up">↑</span>'
-      :p.jugTrend<0?'<span class="lb-table-trend-down">↓</span>'
-      :'<span class="lb-table-trend-same">—</span>';
+    var trendHtml=p.jugTrend>0?'<span class="lb-table-trend-up">&#x25B2;</span>'
+      :p.jugTrend<0?'<span class="lb-table-trend-down">&#x25BC;</span>'
+      :'<span class="lb-table-trend-same">&#x2014;</span>';
+    var streakCls=p.streak===maxStreak&&maxStreak>0?'lb-table-num leader':'lb-table-num';
+    var prCls=p.jugPR===maxPR&&maxPR>0?'lb-table-num leader':'lb-table-num';
     return '<tr>'
-      +'<td><span class="lb-table-name" style="color:'+p.color+'">'+p.nick+'</span></td>'
+      +'<td><span class="lb-table-name">'+p.nick+'</span></td>'
       +'<td class="lb-table-num">'+p.trainingDays+'</td>'
-      +'<td class="lb-table-num">'+p.streak+'</td>'
+      +'<td class="'+streakCls+'">'+p.streak+'</td>'
       +'<td class="lb-table-num">'+p.jugStreak+'</td>'
-      +'<td class="lb-table-num">'+p.jugPR+'</td>'
+      +'<td class="'+prCls+'">'+p.jugPR+'</td>'
       +'<td class="lb-table-num">'+trendHtml+'</td>'
       +'</tr>';
   }).join('');
-
-  el.innerHTML='<div class="lb-table-wrap"><table class="lb-table">'
+  el.innerHTML='<p style="font-size:.65em;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);padding:0 0 8px">Summer Standings</p>'
+    +'<div class="lb-table-wrap"><table class="lb-table">'
     +'<thead><tr>'
-    +'<th>Player</th>'
-    +'<th style="text-align:center">Training Days</th>'
-    +'<th style="text-align:center">Day Streak</th>'
-    +'<th style="text-align:center">Juggle Streak</th>'
-    +'<th style="text-align:center">Juggle PR</th>'
-    +'<th style="text-align:center">Trend</th>'
+    +'<th style="width:30%;text-align:left;padding-left:12px">Player</th>'
+    +'<th style="width:13%">Training<br>Days</th>'
+    +'<th style="width:13%">Day<br>Streak</th>'
+    +'<th style="width:13%">Jug<br>Streak</th>'
+    +'<th style="width:13%">Jug<br>PR</th>'
+    +'<th style="width:10%">Trend</th>'
     +'</tr></thead>'
     +'<tbody>'+rows+'</tbody>'
     +'</table></div>';
