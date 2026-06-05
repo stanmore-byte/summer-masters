@@ -339,7 +339,7 @@ function registerPlayer(){
   var roster=getRoster();
   var existing=roster.find(function(p){return p.name.toLowerCase()===name.toLowerCase();});
   if(existing){showToast('Welcome back, '+name+'!');selectPlayer(existing.name);return;}
-  roster.push({name:name});saveRoster(roster);refreshPlayers();
+  roster.push({name:name,htcRegistered:true});saveRoster(roster);refreshPlayers();
   if(inp)inp.value='';
   showToast('Welcome to the program, '+name+'! 🎉');
   selectPlayer(name);
@@ -399,38 +399,6 @@ document.addEventListener('DOMContentLoaded',function(){
 
 // ── INIT ──────────────────────────────────────────────────────────
 
-function loadHtcRosterFromSheets(onDone){
-  if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0){if(onDone)onDone();return;}
-  var cbName='_htcRoster'+Date.now();
-  var script=document.createElement('script');
-  var done=false;
-  var timer=setTimeout(function(){if(!done){done=true;if(onDone)onDone();}},8000);
-  window[cbName]=function(resp){
-    if(done)return;done=true;clearTimeout(timer);
-    try{document.head.removeChild(script);}catch(e){}
-    delete window[cbName];
-    if(resp&&resp.ok&&resp.data){
-      var roster=getRoster();var changed=false;
-      Object.keys(resp.data).forEach(function(pName){
-        if(!roster.find(function(p){return p.name===pName;})){
-          roster.push({name:pName});changed=true;
-        }
-        // Merge done items from Sheets
-        var sheetDone=resp.data[pName].htcDone||[];
-        if(sheetDone.length){
-          var local=getDone(pName);
-          var merged=Array.from(new Set(local.concat(sheetDone)));
-          if(merged.length!==local.length)saveDone(pName,merged);
-        }
-      });
-      if(changed){saveRoster(roster);refreshPlayers();}
-    }
-    if(onDone)onDone();
-  };
-  script.onerror=function(){if(!done){done=true;clearTimeout(timer);if(onDone)onDone();}};
-  script.src=SHEETS_URL+'?team=htc&all=1&callback='+cbName+'&_t='+Date.now();
-  document.head.appendChild(script);
-}
 
 function sheetsPostHtc(playerName,doneArr){
   if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0)return;
@@ -440,20 +408,40 @@ function sheetsPostHtc(playerName,doneArr){
   }).catch(function(){});}catch(e){}
 }
 
+
+// Only allow known HTC participants — prevents cross-contamination from other pages
+var HTC_ALLOWED = ['Coach Will'];
+function cleanHtcRoster(){
+  var roster=getRoster();
+  // Keep only explicitly registered participants (those who typed their name on THIS page)
+  // A player is valid if they registered via the Join form — we track this with a flag
+  var valid=roster.filter(function(p){
+    return p.htcRegistered===true;
+  });
+  // Always ensure known participants are included
+  HTC_ALLOWED.forEach(function(name){
+    if(!valid.find(function(p){return p.name.toLowerCase()===name.toLowerCase();})){
+      valid.push({name:name,htcRegistered:true});
+    }
+  });
+  if(valid.length!==roster.length){
+    saveRoster(valid);
+  }
+}
+
 // Seed known participants so they appear on every device
 (function(){
   var known=['Coach Will'];
   var roster=getRoster();var changed=false;
   known.forEach(function(name){
     if(!roster.find(function(p){return p.name.toLowerCase()===name.toLowerCase();})){
-      roster.push({name:name});changed=true;
+      roster.push({name:name,htcRegistered:true});changed=true;
     }
   });
   if(changed)saveRoster(roster);
 })();
-loadState();refreshPlayers();
-loadHtcRosterFromSheets(function(){renderRegister();
-if(state.current&&PLAYERS.find(function(p){return p.name===state.current;})){selectPlayer(state.current);}});
+loadState();cleanHtcRoster();refreshPlayers();renderRegister();
+if(state.current&&PLAYERS.find(function(p){return p.name===state.current;})){selectPlayer(state.current);}
 </script>
 </body>
 </html>
