@@ -262,6 +262,7 @@ function toggleItem(itemId){
   var idx=done.indexOf(itemId);
   if(idx>=0){done.splice(idx,1);}else{done.push(itemId);}
   saveDone(state.current,done);
+  sheetsPostHtc(state.current,done);
   renderPlan();
   updateProgress();
   renderRegister();
@@ -397,10 +398,62 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 // ── INIT ──────────────────────────────────────────────────────────
-loadState();refreshPlayers();renderRegister();
-if(state.current&&PLAYERS.find(function(p){return p.name===state.current;})){
-  selectPlayer(state.current);
+
+function loadHtcRosterFromSheets(onDone){
+  if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0){if(onDone)onDone();return;}
+  var cbName='_htcRoster'+Date.now();
+  var script=document.createElement('script');
+  var done=false;
+  var timer=setTimeout(function(){if(!done){done=true;if(onDone)onDone();}},8000);
+  window[cbName]=function(resp){
+    if(done)return;done=true;clearTimeout(timer);
+    try{document.head.removeChild(script);}catch(e){}
+    delete window[cbName];
+    if(resp&&resp.ok&&resp.data){
+      var roster=getRoster();var changed=false;
+      Object.keys(resp.data).forEach(function(pName){
+        if(!roster.find(function(p){return p.name===pName;})){
+          roster.push({name:pName});changed=true;
+        }
+        // Merge done items from Sheets
+        var sheetDone=resp.data[pName].htcDone||[];
+        if(sheetDone.length){
+          var local=getDone(pName);
+          var merged=Array.from(new Set(local.concat(sheetDone)));
+          if(merged.length!==local.length)saveDone(pName,merged);
+        }
+      });
+      if(changed){saveRoster(roster);refreshPlayers();}
+    }
+    if(onDone)onDone();
+  };
+  script.onerror=function(){if(!done){done=true;clearTimeout(timer);if(onDone)onDone();}};
+  script.src=SHEETS_URL+'?team=htc&all=1&callback='+cbName+'&_t='+Date.now();
+  document.head.appendChild(script);
 }
+
+function sheetsPostHtc(playerName,doneArr){
+  if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0)return;
+  try{fetch(SHEETS_URL,{method:'POST',mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({team:'htc',player:playerName,type:'htc_done',data:{done:doneArr}})
+  }).catch(function(){});}catch(e){}
+}
+
+// Seed known participants so they appear on every device
+(function(){
+  var known=['Coach Will'];
+  var roster=getRoster();var changed=false;
+  known.forEach(function(name){
+    if(!roster.find(function(p){return p.name.toLowerCase()===name.toLowerCase();})){
+      roster.push({name:name});changed=true;
+    }
+  });
+  if(changed)saveRoster(roster);
+})();
+loadState();refreshPlayers();
+loadHtcRosterFromSheets(function(){renderRegister();
+if(state.current&&PLAYERS.find(function(p){return p.name===state.current;})){selectPlayer(state.current);}});
 </script>
 </body>
 </html>
