@@ -1,0 +1,96 @@
+══════════════════════════════════════════════════════════════
+  AZZURRI STORM — Google Sheets Setup Guide
+══════════════════════════════════════════════════════════════
+
+STEP 1 — Create the Spreadsheet
+────────────────────────────────
+1. Go to sheets.google.com → create a blank spreadsheet
+2. Name it: "Azzurri Storm — Player Data"
+3. Copy the Spreadsheet ID from the URL:
+   https://docs.google.com/spreadsheets/d/THIS_PART_HERE/edit
+4. Keep this tab open — you'll need it in Step 3
+
+NOTE: The script auto-creates all sheet tabs on first save.
+You do not need to create them manually.
+
+
+STEP 2 — Add the Apps Script
+────────────────────────────────
+1. In the spreadsheet: Extensions → Apps Script
+2. Delete all default code in the editor
+3. Open the file Code.gs (in your Azzurri Storm project folder)
+4. Copy the entire contents and paste into the Apps Script editor
+5. On line 5, replace YOUR_SPREADSHEET_ID_HERE with your actual ID:
+     const SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms';
+6. Click Save (Ctrl+S)
+
+
+STEP 3 — Deploy as Web App
+────────────────────────────────
+1. Click Deploy → New deployment
+2. Click the gear icon next to "Select type" → choose "Web app"
+3. Set:
+     Description:        Azzurri Storm API
+     Execute as:         Me (your Google account)
+     Who has access:     Anyone
+4. Click Deploy
+5. Copy the Web App URL — it looks like:
+   https://script.google.com/macros/s/AKfycb.../exec
+6. Keep this URL — you need it in Step 4
+
+
+STEP 4 — Add the URL to your HTML files
+────────────────────────────────────────
+In both azzurri-storm.html and azzurri-u13.html, find this line:
+
+  const SHEETS_URL = 'YOUR_DEPLOYMENT_URL_HERE';
+
+Replace YOUR_DEPLOYMENT_URL_HERE with your Web App URL from Step 3.
+The line should look like:
+
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
+
+Then push all 4 files to GitHub as normal.
+
+
+STEP 5 — First Load / Migration
+────────────────────────────────────────
+On the very first load after deploying:
+- The app will automatically push any existing localStorage data
+  to Google Sheets (one-time migration, runs silently in background)
+- After that, every save goes to both localStorage AND Sheets
+- Sheets is always the source of truth on load
+
+
+HOW TWO-WAY SYNC WORKS
+────────────────────────────────────────
+→ Player opens app: data fetched from Sheets, merged into localStorage
+→ Player checks off activity: localStorage updated instantly (no lag)
+                               Sheets updated in background (async)
+→ Player switches device: new device loads from Sheets, all data appears
+→ You push a new HTML file: no data affected — Sheets is separate
+→ Sheets unavailable: app uses localStorage as fallback, queues writes
+
+
+SHEET TABS CREATED AUTOMATICALLY
+────────────────────────────────────────
+U11_Daily      — Ball Skills & Strength checkmarks per player per day
+U11_Juggling   — Every juggling log entry
+U11_CDE        — Champions Do Extra journal entries
+U11_Profiles   — Nickname, jersey number, avatar color
+U11_Plans      — Custom activity plans (set via admin.html)
+
+U13_Daily      — (same structure, U-13 team)
+U13_Juggling
+U13_CDE
+U13_Profiles
+U13_Plans
+
+
+ADMIN TIPS
+────────────────────────────────────────
+- You can view and filter any sheet directly in Google Sheets
+- Share the spreadsheet (view only) with assistant coaches
+- Do NOT edit the Plans column directly — use admin.html instead
+- The CDE sheet shows all Extra Work entries in chronological order
+- Sort U11_Juggling by "Juggle Count" descending to see who's improving

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach Felipe — Weekly Training Schedule</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f4f8;
+    padding: 32px 24px;
+    color: #1a202c;
+  }
+  .wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.10);
+    padding: 36px 36px 28px;
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #185FA5;
+  }
+  .page-header h1 {
+    font-size: 1.65em;
+    color: #0C447C;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .page-header p {
+    color: #718096;
+    margin-top: 6px;
+    font-size: 0.9em;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding: 14px 18px;
+    background: #f7fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.83em;
+    color: #4a5568;
+    font-weight: 600;
+  }
+  .legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .schedule {
+    display: flex;
+    gap: 0;
+  }
+  .time-col {
+    width: 58px;
+    flex-shrink: 0;
+    padding-top: 42px;
+  }
+  .time-label {
+    height: 60px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 2px;
+    font-size: 11px;
+    color: #a0aec0;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .time-label.major {
+    color: #718096;
+  }
+  .days-grid {
+    flex: 1;
+    display: flex;
+    gap: 6px;
+  }
+  .day-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .day-header {
+    height: 42px;
+    background: #185FA5;
+    color: white;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9em;
+    letter-spacing: 0.8px;
+  }
+  .day-header.off {
+    background: #e2e8f0;
+    color: #a0aec0;
+  }
+  .day-body {
+    position: relative;
+    height: 440px;
+    background: repeating-linear-gradient(
+      to bottom,
+      #f7fafc 0px,
+      #f7fafc 59px,
+      #e2e8f0 59px,
+      #e2e8f0 60px
+    );
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
+  .day-body.off {
+    background: #f9fafb;
+  }
+  .event {
+    position: absolute;
+    border-radius: 7px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .event-title { font-size: 12px; font-weight: 700; line-height: 1.3; }
+  .event-sub { font-size: 11px; margin-top: 3px; opacity: 0.85; }
+  .event-time { font-size: 11px; margin-top: 2px; opacity: 0.75; }
+
+  .e-premier { background: #185FA5; }
+  .e-premier .event-title { color: #B5D4F4; }
+  .e-premier .event-sub { color: #85B7EB; }
+  .e-premier .event-time { color: #85B7EB; }
+
+  .e-girls-young { background: #993556; }
+  .e-girls-young .event-title { color: #F4C0D1; }
+  .e-girls-young .event-sub { color: #ED93B1; }
+  .e-girls-young .event-time { color: #ED93B1; }
+
+  .e-girls-older { background: #533FC8; }
+  .e-girls-older .event-title { color: #CECBF6; }
+  .e-girls-older .event-sub { color: #AFA9EC; }
+  .e-girls-older .event-time { color: #AFA9EC; }
+
+  .e-boys-young { background: #0F6E56; }
+  .e-boys-young .event-title { color: #9FE1CB; }
+  .e-boys-young .event-sub { color: #5DCAA5; }
+  .e-boys-young .event-time { color: #5DCAA5; }
+
+  .e-boys-older { background: #3B6D11; }
+  .e-boys-older .event-title { color: #C0DD97; }
+  .e-boys-older .event-sub { color: #97C459; }
+  .e-boys-older .event-time { color: #97C459; }
+
+  .footnote {
+    text-align: center;
+    font-size: 12px;
+    color: #a0aec0;
+    margin-top: 14px;
+    font-style: italic;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .wrapper { box-shadow: none; border-radius: 0; padding: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="page-header">
+    <h1>&#x26BD; Coach Felipe — Weekly Training Schedule</h1>
+    <p>Example weekly schedule &nbsp;·&nbsp; Youth Soccer Program</p>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#185FA5;"></div>
+      <span>U-12 Boys Premier — Team Practice</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#993556;"></div>
+      <span>Primetime Girls U-8 / U-10</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#533FC8;"></div>
+      <span>Primetime Girls U-11 / U-13</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#0F6E56;"></div>
+      <span>Primetime Boys U-8 / U-10</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#3B6D11;"></div>
+      <span>Primetime Boys U-11 / U-13</span>
+    </div>
+  </div>
+
+  <div class="schedule">
+
+    <div class="time-col">
+      <div class="time-label">5:00 PM</div>
+      <div class="time-label major">5:30 PM</div>
+      <div class="time-label major">6:00 PM</div>
+      <div class="time-label">6:30 PM</div>
+      <div class="time-label major">7:00 PM</div>
+      <div class="time-label">7:30 PM</div>
+      <div class="time-label major">8:00 PM</div>
+      <div class="time-label" style="height:20px;">8:30 PM</div>
+    </div>
+
+    <div class="days-grid">
+
+      <!-- MONDAY -->
+      <div class="day-col">
+        <div class="day-header">MON</div>
+        <div class="day-body">
+          <div class="event e-premier" style="left:4px;right:4px;top:60px;height:180px;">
+            <div class="event-title">U-12 Boys Premier</div>
+            <div class="event-sub">Team practice</div>
+            <div class="event-time">5:30 – 7:00 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TUESDAY -->
+      <div class="day-col">
+        <div class="day-header">TUE</div>
+        <div class="day-body">
+          <!-- Premier: full column 5:30–6:00, then left half 6:00–7:00 -->
+          <div class="event e-premier" style="left:4px;right:51%;top:60px;height:180px;">
+            <div class="event-title">U-12 Boys Premier</div>
+            <div class="event-time">5:30 – 7:00 PM</div>
+          </div>
+          <!-- Primetime Girls U8-U10: right half 6:00–7:00 -->
+          <div class="event e-girls-young" style="left:51%;right:4px;top:120px;height:120px;">
+            <div class="event-title">Primetime Girls</div>
+            <div class="event-sub">U-8 / U-10</div>
+            <div class="event-time">6:00 – 7:00 PM</div>
+          </div>
+          <!-- Primetime Girls U11-U13: full width 7:00–8:00 -->
+          <div class="event e-girls-older" style="left:4px;right:4px;top:240px;height:120px;">
+            <div class="event-title">Primetime Girls</div>
+            <div class="event-sub">U-11 / U-13</div>
+            <div class="event-time">7:00 – 8:00 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEDNESDAY -->
+      <div class="day-col">
+        <div class="day-header">WED</div>
+        <div class="day-body">
+          <!-- Premier: left half 5:30–7:00 -->
+          <div class="event e-premier" style="left:4px;right:51%;top:60px;height:180px;">
+            <div class="event-title">U-12 Boys Premier</div>
+            <div class="event-time">5:30 – 7:00 PM</div>
+          </div>
+          <!-- Primetime Boys U8-U10: right half 6:00–7:00 -->
+          <div class="event e-boys-young" style="left:51%;right:4px;top:120px;height:120px;">
+            <div class="event-title">Primetime Boys</div>
+            <div class="event-sub">U-8 / U-10</div>
+            <div class="event-time">6:00 – 7:00 PM</div>
+          </div>
+          <!-- Primetime Boys U11-U13: full width 7:00–8:00 -->
+          <div class="event e-boys-older" style="left:4px;right:4px;top:240px;height:120px;">
+            <div class="event-title">Primetime Boys</div>
+            <div class="event-sub">U-11 / U-13</div>
+            <div class="event-time">7:00 – 8:00 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- THURSDAY -->
+      <div class="day-col">
+        <div class="day-header">THU</div>
+        <div class="day-body">
+          <div class="event e-premier" style="left:4px;right:4px;top:60px;height:180px;">
+            <div class="event-title">U-12 Boys Premier</div>
+            <div class="event-sub">Team practice</div>
+            <div class="event-time">5:30 – 7:00 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRIDAY (off) -->
+      <div class="day-col">
+        <div class="day-header off">FRI</div>
+        <div class="day-body off"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="footnote">* On Tue &amp; Wed, side-by-side blocks during 6:00–7:00 PM indicate concurrent sessions running in parallel on separate fields / areas</p>
+
+</div>
+</body>
+</html>

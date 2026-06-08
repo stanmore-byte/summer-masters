@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚽ Body Feint Master — Summer Training Program</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 100%);
+    min-height: 100vh;
+    color: #fff;
+    padding: 20px;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 30px 20px 20px;
+  }
+
+  .hero h1 {
+    font-size: 2.6em;
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .hero p {
+    color: #a0c4e8;
+    font-size: 1.1em;
+  }
+
+  .overall-progress {
+    max-width: 700px;
+    margin: 20px auto;
+    background: rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px 28px;
+  }
+
+  .overall-progress h2 {
+    font-size: 1em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #7fbfff;
+    margin-bottom: 10px;
+  }
+
+  .big-progress-bar {
+    height: 18px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 9px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .big-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    border-radius: 9px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-label {
+    font-size: 0.85em;
+    color: #a0c4e8;
+    text-align: right;
+  }
+
+  .level-badges {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 20px auto;
+    max-width: 700px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: rgba(255,255,255,0.07);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 12px 18px;
+    text-align: center;
+    flex: 1;
+    min-width: 140px;
+    transition: all 0.3s;
+  }
+
+  .badge.unlocked {
+    border-color: #FFD700;
+    background: rgba(255,215,0,0.12);
+  }
+
+  .badge .badge-icon { font-size: 2em; margin-bottom: 4px; }
+  .badge .badge-title { font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; color: #a0c4e8; }
+  .badge .badge-name { font-size: 1em; font-weight: 700; color: #fff; margin-top: 2px; }
+  .badge.unlocked .badge-name { color: #FFD700; }
+
+  .tips-bar {
+    max-width: 700px;
+    margin: 0 auto 24px;
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 12px;
+    padding: 14px 20px;
+  }
+
+  .tips-bar strong { color: #FFD700; }
+  .tips-bar p { font-size: 0.9em; color: #e0e8f0; line-height: 1.6; margin-top: 6px; }
+
+  .week-section {
+    max-width: 700px;
+    margin: 0 auto 24px;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .week-header {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .week1 .week-header { background: linear-gradient(135deg, #1e5799, #2980b9); }
+  .week2 .week-header { background: linear-gradient(135deg, #6a0dad, #9b59b6); }
+  .week3 .week-header { background: linear-gradient(135deg, #b8370a, #e74c3c); }
+
+  .week-num {
+    font-size: 2em;
+    font-weight: 900;
+    opacity: 0.5;
+    min-width: 44px;
+  }
+
+  .week-info h2 { font-size: 1.25em; font-weight: 800; }
+  .week-info p { font-size: 0.85em; opacity: 0.75; }
+
+  .week-progress-mini {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .week-progress-mini .pct {
+    font-size: 1.4em;
+    font-weight: 900;
+    color: #FFD700;
+  }
+
+  .week-progress-mini .pct-label {
+    font-size: 0.7em;
+    opacity: 0.7;
+  }
+
+  .week-body {
+    background: rgba(255,255,255,0.04);
+  }
+
+  .day-block {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 16px 24px;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .day-name {
+    font-weight: 700;
+    font-size: 0.95em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #7fbfff;
+  }
+
+  .day-theme {
+    font-size: 0.8em;
+    color: #aaa;
+    margin-left: auto;
+  }
+
+  .day-complete-badge {
+    display: none;
+    font-size: 0.75em;
+    background: #27ae60;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+
+  .drill-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    background: rgba(255,255,255,0.03);
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  .drill-item:hover { background: rgba(255,255,255,0.07); }
+
+  .drill-item.checked {
+    background: rgba(39,174,96,0.15);
+  }
+
+  .drill-cb {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid rgba(255,255,255,0.3);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .drill-item.checked .drill-cb {
+    background: #27ae60;
+    border-color: #27ae60;
+  }
+
+  .drill-cb::after {
+    content: '';
+    display: none;
+    width: 5px;
+    height: 9px;
+    border: 2px solid white;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+    margin-top: -2px;
+  }
+
+  .drill-item.checked .drill-cb::after { display: block; }
+
+  .drill-text { flex: 1; }
+  .drill-num { font-size: 0.7em; color: #888; font-weight: 600; letter-spacing: 1px; }
+  .drill-name { font-weight: 700; font-size: 0.95em; }
+  .drill-item.checked .drill-name { text-decoration: line-through; opacity: 0.6; }
+  .drill-desc { font-size: 0.82em; color: #a0c4e8; margin-top: 2px; line-height: 1.4; }
+
+  .recovery-block {
+    padding: 12px 16px;
+    background: rgba(39,174,96,0.1);
+    border: 1px solid rgba(39,174,96,0.25);
+    border-radius: 10px;
+    margin-bottom: 6px;
+  }
+
+  .recovery-block .rhead { font-weight: 700; font-size: 0.9em; color: #2ecc71; }
+  .recovery-block p { font-size: 0.82em; color: #a0c4e8; margin-top: 4px; line-height: 1.5; }
+
+  .rest-block {
+    padding: 12px 16px;
+    background: rgba(52,73,94,0.5);
+    border-radius: 10px;
+    text-align: center;
+    color: #888;
+    font-size: 0.9em;
+  }
+
+  .level-unlock-banner {
+    display: none;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    color: #1a1a1a;
+    text-align: center;
+    padding: 12px;
+    font-weight: 800;
+    font-size: 1.05em;
+    border-radius: 0 0 16px 16px;
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+
+  .reset-btn {
+    display: block;
+    margin: 10px auto 40px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.5);
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8em;
+  }
+
+  .reset-btn:hover { border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.8); }
+
+  .rule-pill {
+    display: inline-block;
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.82em;
+    color: #FFD700;
+    margin: 3px 3px;
+    border: 1px solid rgba(255,215,0,0.25);
+  }
+
+  @media (max-width: 500px) {
+    .hero h1 { font-size: 1.8em; }
+    .level-badges { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div style="font-size:3em;margin-bottom:8px;">⚽</div>
+  <h1>BODY FEINT MASTER</h1>
+  <p>3 Weeks · 41 Drills · From Zero to Pro</p>
+</div>
+
+<div class="overall-progress" id="overallBox">
+  <h2>Overall Progress</h2>
+  <div class="big-progress-bar">
+    <div class="big-progress-fill" id="bigBar" style="width:0%"></div>
+  </div>
+  <div class="progress-label"><span id="bigPct">0</span>% complete — <span id="bigCount">0</span> of 41 drills done</div>
+</div>
+
+<div class="level-badges">
+  <div class="badge" id="badge1">
+    <div class="badge-icon">🔵</div>
+    <div class="badge-title">Week 1</div>
+    <div class="badge-name">Direction Master</div>
+  </div>
+  <div class="badge" id="badge2">
+    <div class="badge-icon">🟣</div>
+    <div class="badge-title">Week 2</div>
+    <div class="badge-name">Feint Apprentice</div>
+  </div>
+  <div class="badge" id="badge3">
+    <div class="badge-icon">🔴</div>
+    <div class="badge-title">Week 3</div>
+    <div class="badge-name">Combo King</div>
+  </div>
+</div>
+
+<div class="tips-bar">
+  <strong>⚡ Golden Rules</strong>
+  <p>
+    <span class="rule-pill">Don't rush to the next drill</span>
+    <span class="rule-pill">Slow first, then FAST</span>
+    <span class="rule-pill">Progress beats speed</span>
+    <span class="rule-pill">2–3 drills per day</span>
+    <span class="rule-pill">8 hours of training per week</span>
+  </p>
+</div>
+
+<!-- ===================== WEEK 1 ===================== -->
+<div class="week-section week1">
+  <div class="week-header">
+    <div class="week-num">01</div>
+    <div class="week-info">
+      <h2>Change Direction</h2>
+      <p>Build your footwork foundation — sharp cuts, quick stops</p>
+    </div>
+    <div class="week-progress-mini">
+      <div class="pct" id="w1pct">0%</div>
+      <div class="pct-label">done</div>
+    </div>
+  </div>
+  <div class="week-body">
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Monday</div>
+        <div class="day-theme">⚡ Footwork Basics</div>
+      </div>
+      <div class="drill-item" id="d1" onclick="toggle('d1')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #1</div>
+          <div class="drill-name">The Freeze</div>
+          <div class="drill-desc">Stand still. Lean your whole body hard left — then hard right. Feel your weight shift onto each foot. 10 reps each side. Master your balance first.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d2" onclick="toggle('d2')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #2</div>
+          <div class="drill-name">The Sway Walk</div>
+          <div class="drill-desc">Walk forward and exaggerate a big hip lean left then right every 2 steps. Big movements! 3 sets of 15m.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d3" onclick="toggle('d3')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #3</div>
+          <div class="drill-name">Zigzag Walk</div>
+          <div class="drill-desc">Set up 5 cones or shoes 1.5m apart. Walk through them, touching each one. Focus on angle — go past each, not just around. 3 sets.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d4" onclick="toggle('d4')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #4</div>
+          <div class="drill-name">Zigzag Jog</div>
+          <div class="drill-desc">Same 5 cones as Drill 3 — now jog! Sharp angles at each cone. 3 sets. Don't advance until your angles look crisp.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Tuesday</div>
+        <div class="day-theme">⚽ Ball Intro</div>
+      </div>
+      <div class="drill-item" id="d5" onclick="toggle('d5')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #5</div>
+          <div class="drill-name">Dribble Straight</div>
+          <div class="drill-desc">Dribble the ball in a straight line — alternate inside and outside of your foot. Keep the ball close. 3 sets of 20m each way.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d6" onclick="toggle('d6')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #6</div>
+          <div class="drill-name">Stop and Go</div>
+          <div class="drill-desc">Dribble 5 steps, trap the ball dead with your sole, then explode forward again. 5 sets. The stop has to be clean — no rolling!</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d7" onclick="toggle('d7')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #7</div>
+          <div class="drill-name">Slow Zigzag with Ball</div>
+          <div class="drill-desc">Same 5 cone setup as before — now dribble through them slowly. Keep the ball under control. 3 sets. You're the boss of the ball!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Wednesday</div>
+        <div class="day-theme">🔪 Sharp Cuts</div>
+      </div>
+      <div class="drill-item" id="d8" onclick="toggle('d8')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #8</div>
+          <div class="drill-name">Speed Zigzag</div>
+          <div class="drill-desc">Back to the 5 cones — now faster with the ball! Push yourself. 3 sets. Rest 1 minute between sets.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d9" onclick="toggle('d9')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #9</div>
+          <div class="drill-name">The L-Cut</div>
+          <div class="drill-desc">Dribble straight at a cone, then plant your outside foot hard and cut 90° to one side using the inside of your other foot. 5 reps each side.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d10" onclick="toggle('d10')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #10</div>
+          <div class="drill-name">The V-Cut</div>
+          <div class="drill-desc">Dribble to a cone, stop ball with your sole, then push it back the direction you came (but slightly to one side). Like drawing a V. 5 reps each side.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Thursday</div>
+        <div class="day-theme">💚 Recovery Day</div>
+      </div>
+      <div class="recovery-block">
+        <div class="rhead">🧘 Active Recovery — 10 to 30 Minutes</div>
+        <p>Light jog or stretch · Juggling practice · Watch a Messi or Neymar body feint highlight on YouTube · Rest your legs but keep the ball at your feet.</p>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Friday</div>
+        <div class="day-theme">💥 Accelerate Out</div>
+      </div>
+      <div class="drill-item" id="d11" onclick="toggle('d11')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #11</div>
+          <div class="drill-name">The Sharp Cut</div>
+          <div class="drill-desc">Sprint hard at a cone, plant, cut 90° — then immediately sprint 5m in the new direction. 5 reps each side. The burst after the cut is KEY.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d12" onclick="toggle('d12')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #12</div>
+          <div class="drill-name">The Double Cut</div>
+          <div class="drill-desc">Cut left, sprint 3 steps, then immediately cut right. Back and forth between 2 cones. 5 reps. This trains your body to change direction quickly twice.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d13" onclick="toggle('d13')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #13</div>
+          <div class="drill-name">Cut & Accelerate</div>
+          <div class="drill-desc">Every cut in this drill is followed by a 5-step full-speed burst. If you're not tired after this one, you're not going hard enough! 5 reps each side.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Saturday</div>
+        <div class="day-theme">🏆 Full Speed Test</div>
+      </div>
+      <div class="drill-item" id="d14" onclick="toggle('d14')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #14</div>
+          <div class="drill-name">Full Speed V-Cut</div>
+          <div class="drill-desc">Max speed V-cut — dribble fast, stop dead, push hard in new direction. Can someone watch and see if they can tell which way you'll go? 5 reps each side.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d15" onclick="toggle('d15')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #15</div>
+          <div class="drill-name">Direction Medley</div>
+          <div class="drill-desc">Mix it up! L-cut, V-cut, double cut — pick 3 from this week and do them back to back. Full speed. 10 reps. This is your Week 1 TEST. You've earned it! 🏅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header"><div class="day-name">Sunday</div><div class="day-theme">😴 Rest Day</div></div>
+      <div class="rest-block">Complete rest — your muscles grow while you sleep. See you Monday! 💤</div>
+    </div>
+
+  </div>
+  <div class="level-unlock-banner" id="unlock1">🏅 WEEK 1 COMPLETE — You're a Direction Master! Week 2 Unlocked! 🏅</div>
+</div>
+
+<!-- ===================== WEEK 2 ===================== -->
+<div class="week-section week2">
+  <div class="week-header">
+    <div class="week-num">02</div>
+    <div class="week-info">
+      <h2>Basic Body Feint &amp; Double Fake</h2>
+      <p>The real move — fool defenders with your body, not your feet</p>
+    </div>
+    <div class="week-progress-mini">
+      <div class="pct" id="w2pct">0%</div>
+      <div class="pct-label">done</div>
+    </div>
+  </div>
+  <div class="week-body">
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Monday</div>
+        <div class="day-theme">🎭 The Feint — No Ball</div>
+      </div>
+      <div class="drill-item" id="d16" onclick="toggle('d16')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #16</div>
+          <div class="drill-name">The Shoulder Drop</div>
+          <div class="drill-desc">Stand still. Drop your right shoulder hard — like you're diving right — but stay put. Then left shoulder. Really sell it! 10 each side. Look in a mirror if you can.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d17" onclick="toggle('d17')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #17</div>
+          <div class="drill-name">Walking Feint</div>
+          <div class="drill-desc">Walk forward. Every 3 steps, do a big shoulder drop to one side. Your shoulders and hips both go — then keep walking straight. 3 sets of 15m.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d18" onclick="toggle('d18')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #18</div>
+          <div class="drill-name">Jogging Feint</div>
+          <div class="drill-desc">Same as Drill 17 but jogging! Feint every 4–5 steps. It will feel weird at first — that's normal! 3 sets of 20m.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Tuesday</div>
+        <div class="day-theme">⚽ Feint With Ball</div>
+      </div>
+      <div class="drill-item" id="d19" onclick="toggle('d19')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #19</div>
+          <div class="drill-name">Feint &amp; Go (Walking)</div>
+          <div class="drill-desc">Walk with the ball. Drop your shoulder LEFT — then push the ball RIGHT using the outside of your left foot. Slow and smooth. 5 reps each way. THIS is the body feint!</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d20" onclick="toggle('d20')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #20</div>
+          <div class="drill-name">Feint Through Cones</div>
+          <div class="drill-desc">Set up 5 cones. At EACH cone, do the shoulder drop body feint to get past it. Walking pace. Focus on making it look real. 3 sets.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d21" onclick="toggle('d21')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #21</div>
+          <div class="drill-name">Feint &amp; Burst</div>
+          <div class="drill-desc">After every feint, take 3 explosive accelerating steps. Feint → burst → stop → feint → burst. 5 reps each side. The acceleration makes defenders think they've already lost you.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Wednesday</div>
+        <div class="day-theme">🚀 Feint at Speed</div>
+      </div>
+      <div class="drill-item" id="d22" onclick="toggle('d22')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #22</div>
+          <div class="drill-name">Jog Feint</div>
+          <div class="drill-desc">Dribble at jogging pace, drop shoulder, push ball the other way. The move should start to feel natural now. 3 sets of 5 reps each side.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d23" onclick="toggle('d23')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #23</div>
+          <div class="drill-name">Feint at Speed</div>
+          <div class="drill-desc">Sprint toward a cone, do the body feint 2 steps before it, then accelerate in the new direction. 5 reps each side. Speed makes the feint work in real games!</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d24" onclick="toggle('d24')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #24</div>
+          <div class="drill-name">1v Cone Defender</div>
+          <div class="drill-desc">Put one cone as your pretend defender. Dribble toward it. Use your body feint to beat it and go past. 10 reps. Imagine a real player there!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Thursday</div>
+        <div class="day-theme">💚 Recovery Day</div>
+      </div>
+      <div class="recovery-block">
+        <div class="rhead">🧘 Active Recovery — 10 to 30 Minutes</div>
+        <p>Light juggling · Ball touches against a wall · Film yourself doing the body feint and watch it back — can you see it working? · Rest those legs.</p>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Friday</div>
+        <div class="day-theme">🃏 The Double Fake</div>
+      </div>
+      <div class="drill-item" id="d25" onclick="toggle('d25')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #25</div>
+          <div class="drill-name">Double Feint — No Ball</div>
+          <div class="drill-desc">Feint LEFT with your shoulder… then immediately feint RIGHT… then explode left! Two fakes in one move. Standing still first. 10 reps each direction. This is DEADLY.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d26" onclick="toggle('d26')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #26</div>
+          <div class="drill-name">Double Fake with Ball</div>
+          <div class="drill-desc">Walk with ball, do the double fake, then push ball in final direction. Feint left, feint right, go left. 5 reps each way. You're becoming dangerous!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Saturday</div>
+        <div class="day-theme">⚡ Double Fake Speed</div>
+      </div>
+      <div class="drill-item" id="d27" onclick="toggle('d27')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #27</div>
+          <div class="drill-name">Double Fake Speed Run</div>
+          <div class="drill-desc">Full speed double fake through a line of 3 cones. At each one: feint, feint, go. 3 sets of 5 reps. Film yourself — you'll be shocked how good it looks. Week 2 DONE! 🏅</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header"><div class="day-name">Sunday</div><div class="day-theme">😴 Rest Day</div></div>
+      <div class="rest-block">Rest up — Week 3 is the one where it all comes together. You've got this. 💤</div>
+    </div>
+
+  </div>
+  <div class="level-unlock-banner" id="unlock2">🔮 WEEK 2 COMPLETE — You're a Feint Apprentice! One week to MASTERY! 🔮</div>
+</div>
+
+<!-- ===================== WEEK 3 ===================== -->
+<div class="week-section week3">
+  <div class="week-header">
+    <div class="week-num">03</div>
+    <div class="week-info">
+      <h2>Mix &amp; Combination</h2>
+      <p>Put it all together — game speed, real pressure, full mastery</p>
+    </div>
+    <div class="week-progress-mini">
+      <div class="pct" id="w3pct">0%</div>
+      <div class="pct-label">done</div>
+    </div>
+  </div>
+  <div class="week-body">
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Monday</div>
+        <div class="day-theme">🎯 Feint into Action</div>
+      </div>
+      <div class="drill-item" id="d28" onclick="toggle('d28')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #28</div>
+          <div class="drill-name">Feint to Shoot</div>
+          <div class="drill-desc">Dribble to a cone (your pretend defender), do a body feint to beat it, then hit a shot at the goal (or target on a wall). 10 reps. Feint the keeper, score the goal!</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d29" onclick="toggle('d29')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #29</div>
+          <div class="drill-name">Feint to Pass</div>
+          <div class="drill-desc">Feint past your cone defender, then pass the ball accurately to a target (a wall, another cone, or a parent). 10 reps. In real games, the feint creates the pass lane!</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d30" onclick="toggle('d30')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #30</div>
+          <div class="drill-name">Feint to Sprint</div>
+          <div class="drill-desc">Feint past cone, then full speed sprint for 10m. The sprint HAS to happen immediately — no hesitation! 10 reps. This is how you beat defenders in a real match.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Tuesday</div>
+        <div class="day-theme">🧱 Cone Gauntlet</div>
+      </div>
+      <div class="drill-item" id="d31" onclick="toggle('d31')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #31</div>
+          <div class="drill-name">1v1 vs Cone</div>
+          <div class="drill-desc">Set up 1 cone 5m in front of you. Dribble at it, use ANY feint you've learned to beat it, and accelerate past. 10 reps — try different moves each time!</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d32" onclick="toggle('d32')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #32</div>
+          <div class="drill-name">3-Cone Gauntlet</div>
+          <div class="drill-desc">3 cones in a row, 3m apart. You must beat EACH ONE with a body feint. Different feint at each cone! 5 runs through. You're a nightmare for defenders.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d33" onclick="toggle('d33')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #33</div>
+          <div class="drill-name">Counter Attack Run</div>
+          <div class="drill-desc">Start from your own half. Receive ball, beat a cone with a feint, sprint to goal, shoot. Do it in under 5 seconds! 10 reps. This is how goals happen in real games.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Wednesday</div>
+        <div class="day-theme">🔀 Mix &amp; Combine</div>
+      </div>
+      <div class="drill-item" id="d34" onclick="toggle('d34')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #34</div>
+          <div class="drill-name">Feint + Pull Back</div>
+          <div class="drill-desc">Combine: body feint left → pull ball back with sole → push right. Three moves in one! Walk through it first, then slowly faster. 5 reps each side.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d35" onclick="toggle('d35')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #35</div>
+          <div class="drill-name">Double Fake + V-Cut</div>
+          <div class="drill-desc">Do a double fake → then finish with a V-cut in the final direction. You've got the defender guessing TWICE before you cut away. 5 reps each side.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d36" onclick="toggle('d36')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #36</div>
+          <div class="drill-name">Combination Rush</div>
+          <div class="drill-desc">Pick ANY 2 moves from the whole program. Do them back-to-back at full speed. 10 reps. Try a new combination each time — there are no wrong answers!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Thursday</div>
+        <div class="day-theme">💚 Recovery Day</div>
+      </div>
+      <div class="recovery-block">
+        <div class="rhead">🧘 Active Recovery — 10 to 30 Minutes</div>
+        <p>Light juggling · Review your favourite drill from Week 1 and Week 2 — can you do them even better now? · Think about which move feels most natural to you. That's your signature move!</p>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Friday</div>
+        <div class="day-theme">🆚 Real Pressure</div>
+      </div>
+      <div class="drill-item" id="d37" onclick="toggle('d37')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #37</div>
+          <div class="drill-name">The Guessing Game</div>
+          <div class="drill-desc">Ask a parent or sibling to stand in front of you like a defender. Do your feint — can they guess which way you'll go? If they can't, you've mastered it. 10 rounds each.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d38" onclick="toggle('d38')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #38</div>
+          <div class="drill-name">Keep Away Box</div>
+          <div class="drill-desc">Mark out a small 4m × 4m box. One of you has the ball, one tries to win it. Ball holder uses feints to stay away. 2 minutes each — use every trick you've learned!</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d39" onclick="toggle('d39')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #39</div>
+          <div class="drill-name">Move of the Day</div>
+          <div class="drill-desc">Pick your BEST feint. Film yourself doing it 10 times at full speed. Watch it back. Is it smooth? Is it fast? Is it convincing? Keep going until the answer is YES to all three.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-name">Saturday</div>
+        <div class="day-theme">🏆 MASTERY DAY</div>
+      </div>
+      <div class="drill-item" id="d40" onclick="toggle('d40')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #40</div>
+          <div class="drill-name">Full Game Speed — All Moves</div>
+          <div class="drill-desc">Go through ALL your favourite moves at full game speed. Call out the name of the move before you do it, then execute it perfectly. 5 reps of each move. You're in complete control now.</div>
+        </div>
+      </div>
+      <div class="drill-item" id="d41" onclick="toggle('d41')">
+        <div class="drill-cb"></div>
+        <div class="drill-text">
+          <div class="drill-num">DRILL #41 ⭐</div>
+          <div class="drill-name">THE SHOW — Mastery Challenge</div>
+          <div class="drill-desc">Film your 3 absolute best body feints. Share them on Instagram @Persianball.de if you want! You started with nothing — now you have a real weapon. You're a BODY FEINT MASTER. 🏆🔥</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-block">
+      <div class="day-header"><div class="day-name">Sunday</div><div class="day-theme">🎉 Champion's Rest</div></div>
+      <div class="rest-block">You did it. 3 weeks. 41 drills. You are a Body Feint Master. Now go destroy your friends in the next game! 🏆⚽</div>
+    </div>
+
+  </div>
+  <div class="level-unlock-banner" id="unlock3">🏆 PROGRAM COMPLETE! YOU ARE A BODY FEINT MASTER! 🏆</div>
+</div>
+
+<button class="reset-btn" onclick="resetAll()">Reset all progress</button>
+
+<script>
+  const TOTAL = 41;
+
+  // Week ranges
+  const w1 = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10','d11','d12','d13','d14','d15'];
+  const w2 = ['d16','d17','d18','d19','d20','d21','d22','d23','d24','d25','d26','d27'];
+  const w3 = ['d28','d29','d30','d31','d32','d33','d34','d35','d36','d37','d38','d39','d40','d41'];
+  const all = [...w1, ...w2, ...w3];
+
+  // Load saved state
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem('feint_progress') || '{}'); } catch(e) { state = {}; }
+
+  function save() { try { localStorage.setItem('feint_progress', JSON.stringify(state)); } catch(e) {} }
+
+  function toggle(id) {
+    state[id] = !state[id];
+    save();
+    render();
+  }
+
+  function resetAll() {
+    if (confirm('Reset ALL progress? This cannot be undone.')) {
+      state = {};
+      save();
+      render();
+    }
+  }
+
+  function render() {
+    let total = 0;
+    all.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (state[id]) { el.classList.add('checked'); total++; }
+      else el.classList.remove('checked');
+    });
+
+    // Overall bar
+    const pct = Math.round((total / TOTAL) * 100);
+    document.getElementById('bigBar').style.width = pct + '%';
+    document.getElementById('bigPct').textContent = pct;
+    document.getElementById('bigCount').textContent = total;
+
+    // Week bars
+    function weekPct(ids) {
+      const done = ids.filter(id => state[id]).length;
+      return Math.round((done / ids.length) * 100);
+    }
+    document.getElementById('w1pct').textContent = weekPct(w1) + '%';
+    document.getElementById('w2pct').textContent = weekPct(w2) + '%';
+    document.getElementById('w3pct').textContent = weekPct(w3) + '%';
+
+    // Badges
+    if (weekPct(w1) === 100) {
+      document.getElementById('badge1').classList.add('unlocked');
+      document.getElementById('badge1').querySelector('.badge-icon').textContent = '🏅';
+      document.getElementById('unlock1').style.display = 'block';
+    }
+    if (weekPct(w2) === 100) {
+      document.getElementById('badge2').classList.add('unlocked');
+      document.getElementById('badge2').querySelector('.badge-icon').textContent = '🔮';
+      document.getElementById('unlock2').style.display = 'block';
+    }
+    if (weekPct(w3) === 100) {
+      document.getElementById('badge3').classList.add('unlocked');
+      document.getElementById('badge3').querySelector('.badge-icon').textContent = '🏆';
+      document.getElementById('unlock3').style.display = 'block';
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
