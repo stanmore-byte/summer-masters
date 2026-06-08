@@ -528,6 +528,47 @@ body{background:var(--az-dark);}
 .lb-table-trend-down{color:rgba(255,255,255,.3);font-size:1em}
 .lb-table-trend-same{color:rgba(255,255,255,.2)}
 
+
+/* ── HALL OF FAME ── */
+.hof-wrap{padding:0 0 60px}
+.hof-header{text-align:center;padding:10px 0 16px}
+.hof-title{font-size:1.2em;font-weight:900;background:linear-gradient(135deg,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
+.hof-sub{font-size:.72em;color:rgba(255,255,255,.35);margin-top:4px;font-style:italic}
+.hof-category{margin-bottom:20px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.hof-cat-hdr{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid}
+.hof-cat-title{font-weight:900;font-size:.9em;letter-spacing:.02em}
+.hof-podium{display:flex;justify-content:center;align-items:flex-end;gap:8px;padding:16px 12px 10px;background:#0a0a0a}
+.hof-podium-spot{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;max-width:120px}
+.hof-gold{order:2;padding-bottom:0}
+.hof-silver{order:1;padding-bottom:0;opacity:.88}
+.hof-bronze{order:3;padding-bottom:0;opacity:.82}
+.hof-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1em;color:#fff;flex-shrink:0;border:2px solid rgba(255,255,255,.2)}
+.hof-gold .hof-av{border-color:#FFD700;box-shadow:0 0 12px rgba(255,215,0,.4)}
+.hof-silver .hof-av{border-color:#C0C0C0}
+.hof-bronze .hof-av{border-color:#CD7F32}
+.hof-p-name{font-weight:800;font-size:.82em;text-align:center;color:#fff}
+.hof-p-stat{font-size:.88em;font-weight:900;text-align:center}
+.hof-p-unit{font-size:.62em;color:rgba(255,255,255,.35);text-align:center}
+.hof-rest{background:#080808;padding:4px 12px 8px}
+.hof-rest-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.hof-rest-row:last-child{border-bottom:none}
+.hof-rest-rank{font-size:.7em;font-weight:800;color:rgba(255,255,255,.25);min-width:18px;text-align:center}
+.hof-rest-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.7em;color:#fff;flex-shrink:0}
+.hof-rest-name{flex:1;font-size:.82em;font-weight:700;color:rgba(255,255,255,.75)}
+.hof-rest-stat{font-size:.78em;font-weight:800}
+
+
+/* ── TOOLTIPS ── */
+.tip-wrap{position:relative;display:inline-flex;align-items:center}
+.tip-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:9px;font-weight:900;cursor:pointer;flex-shrink:0;margin-left:6px;transition:background .15s;user-select:none;font-style:normal}
+.tip-icon:hover{background:rgba(255,255,255,.25);color:#fff}
+.tip-box{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:9px 12px;font-size:.73em;color:rgba(255,255,255,.85);line-height:1.5;min-width:200px;max-width:280px;text-align:left;z-index:999;pointer-events:none;opacity:0;transition:opacity .15s;box-shadow:0 8px 24px rgba(0,0,0,.5);font-weight:400}
+.tip-box::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1a1a2e}
+.tip-icon:hover .tip-box,
+.tip-icon.tip-open .tip-box{opacity:1;pointer-events:auto}
+.tip-icon.tip-right .tip-box{left:auto;right:0;transform:none}
+.tip-icon.tip-right .tip-box::after{left:auto;right:12px;transform:none}
+
 </style>
 </head>
 <body>
@@ -596,6 +637,9 @@ body{background:var(--az-dark);}
 
   <div class="tab-pane" id="tab-table" style="padding:14px 14px 60px">
     <div id="lb-table-container"></div>
+  </div>
+  <div class="tab-pane" id="tab-hof" style="padding:14px 14px 60px">
+    <div id="hof-container"></div>
   </div>
 
 <!-- ═══════════════════ DRILL MODAL ═══════════════════ -->
@@ -1099,7 +1143,7 @@ function renderDailyModules(){
   if(jugStreak>0||jugBestStreak>0){
     jugStreakHtml='<div class="jug-streak-row"><span style="font-size:1.2em">🔥</span>'
       +'<span style="font-size:1.05em;font-weight:900;color:#0EA5E9;margin:0 4px">'+jugStreak+'</span>'
-      +'<span style="font-size:.76em;color:rgba(255,255,255,.5);flex:1">juggling streak</span>'
+      +'<span style="font-size:.76em;color:rgba(255,255,255,.5);flex:1">juggling streak <i class="tip-icon" tabindex="0"><span class="tip-box">Consecutive days ending yesterday where you logged at least one juggling session. Juggle every day to build it — missing one day resets the count.</span>\u2139</i></span>'
       +(jugBestStreak>jugStreak?'<span style="font-size:.7em;color:rgba(14,165,233,.5)">Best: '+jugBestStreak+'</span>':'')
       +'</div>';
   }
@@ -1935,8 +1979,9 @@ function renderTeam(){
       stDone:stDone,stTotal:myST.length,
       latestCDE:latestCDE};
   }).sort(function(a,b){
+    if(b.weekStreak!==a.weekStreak)return b.weekStreak-a.weekStreak;
     if(b.streak!==a.streak)return b.streak-a.streak;
-    if(b.jugStreak!==a.jugStreak)return b.jugStreak-a.jugStreak;
+    if(b.completeDays!==a.completeDays)return b.completeDays-a.completeDays;
     return b.jugPR-a.jugPR;
   });
 
@@ -2034,6 +2079,10 @@ function switchTab(tab, btn){
   if(tab==='table'){
     sheetsLoadAll(function(){renderLeaderboardTable();});
     renderLeaderboardTable();
+  }
+  if(tab==='hof'){
+    sheetsLoadAll(function(){renderHallOfFame();});
+    renderHallOfFame();
   }
 }
 
@@ -2309,7 +2358,7 @@ function renderConsistencyBar(playerName){
   var activePct=total>0?active/total*100:0;
   var inactivePct=total>0?Math.max(0,(elapsed-active)/total*100):0;
   el.innerHTML='<div class="sc-header">'
-    +'<span class="sc-title">Summer Consistency</span>'
+    +'<span class="sc-title">Summer Consistency <i class="tip-icon" tabindex="0"><span class="tip-box">Active days (blue) vs elapsed days with no activity (grey). Percentage = active days ÷ total days elapsed since May 30. Aim for 80%+ to turn the bar green.</span>\u2139</i></span>'
     +'<span class="sc-countdown"><span>'+cdText+'</span></span>'
     +'</div>'
     +'<div class="sc-bar-wrap">'
@@ -2450,6 +2499,161 @@ function renderLeaderboardTable(){
     +'</tr></thead>'
     +'<tbody>'+rows+'</tbody>'
     +'</table></div>';
+}
+
+
+function getWeekStats(playerName, ws, we){
+  var days=getWeekDays(ws,we);
+  var completeDays=0,maxStreak=0,curStreak=0;
+  days.forEach(function(ds){
+    if(isDayComplete(playerName,ds)){completeDays++;curStreak++;if(curStreak>maxStreak)maxStreak=curStreak;}
+    else{curStreak=0;}
+  });
+  var jd=getJugData(playerName);
+  var weekJugs=jd.log.filter(function(e){return e.date>=ws&&e.date<=we;})
+    .sort(function(a,b){return a.date.localeCompare(b.date);});
+  var weekPR=weekJugs.length>0?Math.max.apply(null,weekJugs.map(function(e){return e.count;})):0;
+  var improvement=weekJugs.length>=3?weekPR-weekJugs[0].count:null;
+  var custColor=getPlayerColor(playerName);
+  var pObj=PLAYERS.find(function(p){return p.name===playerName;})||{color:'#555'};
+  return{
+    name:playerName,nick:getDisplayName(playerName),
+    avColor:custColor||pObj.color,jersey:getJerseyNum(playerName),
+    completeDays:completeDays,weekStreak:maxStreak,
+    summerStreak:getStreak(playerName),
+    totalSummerDays:getTotalActiveDays(playerName),
+    weekPR:weekPR,improvement:improvement,jugSessions:weekJugs.length
+  };
+}
+
+function getHallOfFame(weekIdx){
+  var wk=WEEKS[weekIdx];if(!wk)return null;
+  var stats=PLAYERS.map(function(p){return getWeekStats(p.name,wk.start,wk.end);});
+
+  function tiebreak(a,b){
+    if(b.weekStreak!==a.weekStreak)return b.weekStreak-a.weekStreak;
+    if(b.summerStreak!==a.summerStreak)return b.summerStreak-a.summerStreak;
+    if(b.totalSummerDays!==a.totalSummerDays)return b.totalSummerDays-a.totalSummerDays;
+    return b.weekPR-a.weekPR;
+  }
+  var byStreak=stats.slice().sort(function(a,b){
+    if(b.weekStreak!==a.weekStreak)return b.weekStreak-a.weekStreak;
+    return tiebreak(a,b);
+  }).filter(function(p){return p.weekStreak>0;}).slice(0,7);
+
+  var byJuggling=stats.slice().sort(function(a,b){
+    if(b.weekPR!==a.weekPR)return b.weekPR-a.weekPR;
+    return tiebreak(a,b);
+  }).filter(function(p){return p.weekPR>0;}).slice(0,7);
+
+  var byImproved=stats.slice().sort(function(a,b){
+    if(b.improvement!==a.improvement)return(b.improvement||0)-(a.improvement||0);
+    return b.weekPR-a.weekPR;
+  }).filter(function(p){return p.jugSessions>=3&&p.improvement!==null&&p.improvement>=0;}).slice(0,7);
+
+  return{week:wk,byStreak:byStreak,byJuggling:byJuggling,byImproved:byImproved};
+}
+
+
+function renderHallOfFame(){
+  var el=document.getElementById('hof-container');
+  if(!el)return;
+  if(_hofWeekIdx===null)_hofWeekIdx=Math.max(0,getCurrentWeekIdx()-1);
+  var hof=getHallOfFame(_hofWeekIdx);
+  if(!hof){el.innerHTML='<div style="text-align:center;padding:30px;color:rgba(255,255,255,.3)">No week data yet.</div>';return;}
+  var wk=hof.week;
+
+  // Week nav
+  var canPrev=_hofWeekIdx>0;
+  var canNext=_hofWeekIdx<WEEKS.length-1&&pacificTodayStr()>WEEKS[_hofWeekIdx+1].start;
+  var navHtml='<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px">'
+    +'<button onclick="hofNav(-1)" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:'+(canPrev?'#fff':'rgba(255,255,255,.2)')+';border-radius:8px;padding:6px 14px;cursor:'+(canPrev?'pointer':'default')+';font-size:.85em">◀</button>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:1.05em;color:#FFD700">'+wk.label+'</div>'
+    +'<div style="font-size:.7em;color:rgba(255,255,255,.4)">'+wk.start+' → '+wk.end+'</div></div>'
+    +'<button onclick="hofNav(1)" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:'+(canNext?'#fff':'rgba(255,255,255,.2)')+';border-radius:8px;padding:6px 14px;cursor:'+(canNext?'pointer':'default')+';font-size:.85em">▶</button>'
+    +'</div>';
+
+  function medalBadge(i){
+    return i===0?'🥇':i===1?'🥈':i===2?'🥉':'<span style="font-size:.8em;color:rgba(255,255,255,.4);font-weight:700">'+(i+1)+'</span>';
+  }
+  function glowColor(i){
+    return i===0?'rgba(255,215,0,.15)':i===1?'rgba(192,192,192,.1)':i===2?'rgba(205,127,50,.1)':'rgba(255,255,255,.04)';
+  }
+  function borderColor(i){
+    return i===0?'rgba(255,215,0,.45)':i===1?'rgba(192,192,192,.3)':i===2?'rgba(205,127,50,.3)':'rgba(255,255,255,.08)';
+  }
+
+  function buildCategory(title, icon, color, players, statFn, unitFn){
+    if(!players.length)return'<div class="hof-category"><div class="hof-cat-hdr" style="background:'+color+'20;border-color:'+color+'40"><span style="font-size:1.4em">'+icon+'</span><span class="hof-cat-title" style="color:'+color+'">'+title+'</span></div>'
+      +'<div style="text-align:center;padding:16px;color:rgba(255,255,255,.3);font-size:.82em">No data yet for this week</div></div>';
+    var top3=players.slice(0,3);
+    var rest=players.slice(3);
+    // Top 3 podium
+    var podHtml='<div class="hof-podium">';
+    // Order: silver(1) - gold(0) - bronze(2) for visual effect
+    var order=top3.length===1?[0]:top3.length===2?[0,1]:[1,0,2];
+    var heights=['hof-silver','hof-gold','hof-bronze'];
+    order.forEach(function(idx){
+      if(!top3[idx])return;
+      var p=top3[idx];
+      var avContent=p.jersey?p.jersey:p.name.charAt(0).toUpperCase();
+      podHtml+='<div class="hof-podium-spot '+(idx===0?'hof-gold':idx===1?'hof-silver':'hof-bronze')+'">'
+        +'<div style="font-size:1.6em;margin-bottom:4px">'+medalBadge(idx)+'</div>'
+        +'<div class="hof-av" style="background:'+p.avColor+'">'+avContent+'</div>'
+        +'<div class="hof-p-name">'+p.nick+'</div>'
+        +'<div class="hof-p-stat" style="color:'+color+'">'+statFn(p)+'</div>'
+        +(unitFn?'<div class="hof-p-unit">'+unitFn(p)+'</div>':'')
+        +'</div>';
+    });
+    podHtml+='</div>';
+    // 4th-7th
+    var restHtml='';
+    if(rest.length){
+      restHtml='<div class="hof-rest">';
+      rest.forEach(function(p,i){
+        var avContent=p.jersey?p.jersey:p.name.charAt(0).toUpperCase();
+        restHtml+='<div class="hof-rest-row">'
+          +'<span class="hof-rest-rank">'+(i+4)+'</span>'
+          +'<div class="hof-rest-av" style="background:'+p.avColor+'">'+avContent+'</div>'
+          +'<span class="hof-rest-name">'+p.nick+'</span>'
+          +'<span class="hof-rest-stat" style="color:'+color+'">'+statFn(p)+'</span>'
+          +'</div>';
+      });
+      restHtml+='</div>';
+    }
+    return'<div class="hof-category">'
+      +'<div class="hof-cat-hdr" style="background:'+color+'20;border-color:'+color+'40"><span style="font-size:1.4em">'+icon+'</span><span class="hof-cat-title" style="color:'+color+'">'+title+'</span></div>'
+      +podHtml+restHtml+'</div>';
+  }
+
+  var catTip='';
+  function setCatTip(t){catTip='<i class="tip-icon tip-right" tabindex="0"><span class="tip-box">'+t+'</span>\u2139</i>';}
+  setCatTip('Counts your longest consecutive run of fully complete days (Ball Skills + Strength = 100%) within this Mon–Sun week. Ties go to: longest summer streak → most total summer days → highest weekly juggling score.');
+  var streakCat=buildCategory('Training Streak','🔥','#FF8C00',hof.byStreak,
+    function(p){return p.weekStreak+' day'+(p.weekStreak!==1?'s':'');},
+    function(p){return p.completeDays+'/7 days complete';});
+
+  setCatTip('Your single best juggling count logged any day this week. Need at least one session to appear here. Ties broken by training streak.');
+  var jugCat=buildCategory('Juggling Record','🎯','#0EA5E9',hof.byJuggling,
+    function(p){return p.weekPR+' juggles';},
+    function(p){return 'this week\'s best';});
+
+  setCatTip('Requires 3+ juggling sessions this week. Calculated as your best count of the week minus your first count of the week — showing how much you grew during the week.');
+  var impCat=buildCategory('Most Improved','📈','#22C55E',hof.byImproved,
+    function(p){return(p.improvement>=0?'+':'')+p.improvement+' juggle improvement';},
+    function(p){return p.jugSessions+' sessions logged';});
+
+  el.innerHTML='<div class="hof-wrap">'
+    +'<div class="hof-header"><div class="hof-title">⭐ Hall of Fame</div>'
+    +'<div class="hof-sub">Winners of the week — keep earning your place <i class="tip-icon tip-right" tabindex="0"><span class="tip-box">Each week runs Monday to Sunday. The Hall of Fame locks in at Sunday midnight Pacific. Use ◀ ▶ to browse past weeks and see who won.</span>\u2139</i></div></div>'
+    +navHtml+streakCat+jugCat+impCat+'</div>';
+}
+function hofNav(dir){
+  var next=_hofWeekIdx+dir;
+  if(next<0||next>=WEEKS.length)return;
+  if(pacificTodayStr()<WEEKS[next].start)return;
+  _hofWeekIdx=next;
+  renderHallOfFame();
 }
 
 // ══════════════════════════════════════════════
