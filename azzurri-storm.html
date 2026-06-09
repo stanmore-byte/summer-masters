@@ -2696,6 +2696,16 @@ function hofNav(dir){
 
 
 // ── TOOLTIP SYSTEM — self-contained, creates overlay on demand ──
+var TIP_DATA={
+  'streak_daily':{icon:'🔥',title:'Day Streak',body:'Counts consecutive days ending YESTERDAY where you completed all Ball Skills + Strength Training (100% each). Today is ongoing — finish today to extend your streak tonight. Missing one day resets it to zero.'},
+  'streak_juggling':{icon:'🎯',title:'Juggling Streak',body:'Counts consecutive days ending yesterday where you logged at least one juggling session. Separate from your training streak — missing one day resets it.'},
+  'consistency':{icon:'📊',title:'Summer Consistency',body:'Blue bar = days you were active. Grey bar = elapsed days with no activity. Percentage = active days ÷ days elapsed since May 30. Hit 80%+ to turn the bar green.'},
+  'leaderboard':{icon:'🏆',title:'Leaderboard Ranking',body:'Rankings reset every Monday — this week only. Order:\n1. Consecutive days completed this week\n2. Length of current training streak\n3. Total active training days this summer\n4. Your juggling record this week'},
+  'hof_week':{icon:'⭐',title:'Hall of Fame — Weekly Reset',body:'Each week runs Monday to Sunday. Winners lock in at Sunday midnight Pacific. Use ◀ ▶ to browse past weeks. A new competition starts every Monday!'},
+  'hof_streak':{icon:'🔥',title:'Training Streak Award',body:'Longest consecutive run of fully complete days (Ball Skills + Strength = 100%) within this Mon–Sun week.\n\nTiebreakers:\n1. Length of current training streak\n2. Total active training days this summer\n3. Your juggling record this week'},
+  'hof_juggling':{icon:'🎯',title:'Juggling Record Award',body:'Your single best juggling count logged on any day this week. Ties broken by training streak, then summer streak. Juggle at least once this week to qualify.'},
+  'hof_improved':{icon:'📈',title:'Most Improved Award',body:'Requires 3+ juggling sessions this week. Measures your BEST count of the week minus your FIRST count of the week. Shows growth within the week, not raw skill.'}
+};
 function _getTipOverlay(){
   var ov=document.getElementById('_tipOv');
   if(ov)return ov;
