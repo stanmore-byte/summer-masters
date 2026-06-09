@@ -2863,114 +2863,97 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeTip();}
 var TEAM_LABEL = typeof TEAM_ID !== 'undefined' ? (TEAM_ID==='u11'?'Azzurri U-11 Premier':TEAM_ID==='u13'?'Azzurri U-13 Premier':'Friends of the Program') : 'Team';
 
 function generateWeeklyRecap(weekIdx){
-  var wk = WEEKS[weekIdx];
-  if(!wk) return '';
-  var today = pacificTodayStr();
-  var isPast = today > wk.end;
-  var stats = PLAYERS.map(function(p){return getWeekStats(p.name,wk.start,wk.end);});
-  var hof = getSummerOfFame(weekIdx);
+  var wk=WEEKS[weekIdx];if(!wk)return'';
+  var today=pacificTodayStr();
+  var isPast=today>wk.end;
+  var isCurrent=today>=wk.start&&today<=wk.end;
+  var teamLabel=typeof TEAM_ID!=='undefined'?(TEAM_ID==='u11'?'Azzurri U-11 Premier':TEAM_ID==='u13'?'Azzurri U-13 Premier':'Friends of the Program'):'Team';
+  var weekNum=weekIdx+1;
 
-  // Participation stats
-  var participated = stats.filter(function(p){return p.completeDays>0;});
-  var fullDays = stats.filter(function(p){return p.weekStreak>=5;});
-  var totalJugSessions = stats.reduce(function(s,p){return s+p.jugSessions;},0);
-  var totalCompleteDays = stats.reduce(function(s,p){return s+p.completeDays;},0);
+  var stats=PLAYERS.map(function(p){return getWeekStats(p.name,wk.start,wk.end);});
+  var hof=getSummerOfFame(weekIdx);
 
-  // CDE entries this week — per player
-  var cdeHighlights = [];
-  PLAYERS.forEach(function(p){
-    var entries = getCDEJournal(p.name).filter(function(e){return e.date>=wk.start&&e.date<=wk.end;});
-    var dayData = getWeekStats(p.name,wk.start,wk.end);
-    if(entries.length>0){
-      cdeHighlights.push({nick:getDisplayName(p.name), entry:entries[0].text, completeDays:dayData.completeDays});
-    } else if(dayData.completeDays>0){
-      cdeHighlights.push({nick:getDisplayName(p.name), entry:null, completeDays:dayData.completeDays});
-    }
-  });
+  var participated=stats.filter(function(p){return p.completeDays>0;});
+  var fullDays=stats.filter(function(p){return p.weekStreak>=5;});
+  var totalJugSessions=stats.reduce(function(s,p){return s+p.jugSessions;},0);
+  var totalCompleteDays=stats.reduce(function(s,p){return s+p.completeDays;},0);
 
-  // SOF winners
-  var streakW   = hof && hof.byStreak.length>0   ? hof.byStreak[0]   : null;
-  var jugW      = hof && hof.byJuggling.length>0 ? hof.byJuggling[0] : null;
-  var improvedW = hof && hof.byImproved.length>0 ? hof.byImproved[0] : null;
+  var streakW=hof&&hof.byStreak.length>0?hof.byStreak[0]:null;
+  var jugW=hof&&hof.byJuggling.length>0?hof.byJuggling[0]:null;
+  var improvedW=hof&&hof.byImproved.length>0?hof.byImproved[0]:null;
 
-  var nextWk = WEEKS[weekIdx+1];
-  var nextWkStr = nextWk ? nextWk.label+' ('+nextWk.start+' to '+nextWk.end+')' : 'up next';
+  var nextWk=WEEKS[weekIdx+1];
+  var nextWkStr=nextWk?nextWk.label+' ('+nextWk.start+' to '+nextWk.end+')':'Next Week';
 
-  var lines = [];
-  lines.push("📋 '+TEAM_LABEL.toUpperCase()+' — '+wk.label.toUpperCase()+' RECAP");
-  lines.push('Week of '+wk.start+' to '+wk.end);
-  lines.push('');
-  lines.push("Dear '+TEAM_LABEL+' Parents,");
-  lines.push('');
-  lines.push("Week '+(weekIdx+1)+' of our summer program is '+(isPast?'behind us':'now complete')+' and I couldn't be more proud of what these girls are building — not just in skill, but in character. Champions Do Extra isn't a slogan, it's a daily decision. Every rep done, every juggling session logged, every extra activity recorded is a small vote cast for who they're becoming.");
-  lines.push('');
-  lines.push("The girls who are doing the ordinary things, day after day, extraordinarily — that's where the real growth happens. And it's never too late to start. Every new day is a fresh chance to show up.");
-  lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push("🏆 '+wk.label.toUpperCase()+' SUMMER OF FAME");
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('');
-  if(streakW)   lines.push('🔥 Training Streak:   '+streakW.nick+' — '+streakW.weekStreak+' consecutive days of complete training');
-  if(jugW)      lines.push('🎯 Juggling Record:   '+jugW.nick+' — '+jugW.weekPR+' juggles (personal best this week)');
-  if(improvedW) lines.push('📈 Most Improved:      '+improvedW.nick+' — +'+improvedW.improvement+' juggle improvement across '+improvedW.jugSessions+' sessions');
-  if(!streakW && !jugW && !improvedW) lines.push('Data is still coming in — check the SOF tab for live standings.');
-  lines.push('');
-  lines.push('These results are live on the Summer of Fame tab inside the training app. Encourage your daughter to check it — she can see exactly where she stands and what it takes to earn a spot.');
-  lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('📊 TEAM PARTICIPATION — '+wk.label);
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('');
-  lines.push("• '+participated.length+' of '+PLAYERS.length+' players logged at least one training day");
-  lines.push("• '+totalCompleteDays+' total complete training days across the team");
-  lines.push("• '+totalJugSessions+' juggling sessions logged");
-  if(fullDays.length>0) lines.push('• '+fullDays.length+' player'+(fullDays.length>1?'s':'')+' completed 5+ days: '+fullDays.map(function(p){return p.nick;}).join(', '));
-  lines.push('');
-  lines.push('Participation is the foundation. Showing up matters — even on the hard days.');
-  lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('⭐ CHAMPIONS DO EXTRA — Player Highlights');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('');
-  lines.push("Here's what your players were up to beyond the standard program:");
-  lines.push('');
-
-  if(cdeHighlights.length===0){
-    lines.push('No CDE activities logged this week — remind your daughter that anything counts: a run, a bike ride, a swim, strength work. Log it!');
-  } else {
-    cdeHighlights.forEach(function(h){
-      if(h.entry){
-        lines.push("• '+h.nick+': \"'+h.entry+'\"");
-      } else {
-        lines.push("• '+h.nick+': Completed '+h.completeDays+' training day'+(h.completeDays!==1?'s':'')+' — great consistency!");
-      }
-    });
+  var daysLeft=0;
+  if(isCurrent){
+    var endDate=new Date(wk.end+'T23:59:59');
+    var nowDate=new Date(today+'T12:00:00');
+    daysLeft=Math.max(0,Math.round((endDate-nowDate)/86400000));
   }
 
-  lines.push('');
-  lines.push("Every one of these entries matters. The point isn't perfection — it's pattern. We're building habits that will serve these girls well beyond soccer.");
-  lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('💪 LOOKING AHEAD — '+(nextWk?nextWkStr:'Next Week'));
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('');
-  lines.push((isPast?"As we head into "+(nextWk?nextWk.label:"the next week")+", the":(wk.label+" is still in progress \u2014 the"))+" Summer of Fame resets each Monday. That means every player has a fresh chance to lead the board. Consistency compounds. The player who shows up every single day \u2014 even when it's hard \u2014 is the one who peaks when it counts.");
-  lines.push('');
-  lines.push('Encourage your daughter to:');
-  lines.push('  ✓ Complete her Ball Skills and Strength Training daily');
-  lines.push('  ✓ Log her juggling — every session, every count');
-  lines.push('  ✓ Add something extra to her CDE log');
-  lines.push('  ✓ Check the Summer of Fame tab to track her progress');
-  lines.push('');
-  lines.push('Thank you for supporting her through this program. It makes all the difference.');
-  lines.push('');
-  lines.push('Doing the ordinary things, extraordinarily —');
-  lines.push('Coach Will');
-  lines.push('');
-  lines.push('─────────────────────────────────────────');
-  lines.push('Access the training app: https://stanmore-byte.github.io/summer-masters/');
+  var NL='\n';
+  var SEP='━'.repeat(24);
 
-  return lines.join('\n');
+  var t='';
+  t+='📋 '+teamLabel.toUpperCase()+' — '+wk.label.toUpperCase()+' RECAP'+NL;
+  t+='Week of '+wk.start+' to '+wk.end+NL+NL;
+  t+='Dear '+teamLabel+' Parents,'+NL+NL;
+  t+='Week '+weekNum+' of our summer program is '+(isPast?'behind us':'now complete')+' and I couldn’t be more proud of what these girls are building — not just in skill, but in character. Champions Do Extra isn’t a slogan, it’s a daily decision. Every rep done, every juggling session logged, every extra activity recorded is a small vote cast for who they’re becoming.'+NL+NL;
+  t+='The girls who are doing the ordinary things, day after day, extraordinarily — that’s where the real growth happens. And it’s never too late to start. Every new day is a fresh chance to show up.'+NL+NL;
+
+  t+=SEP+NL;
+  t+='🏆 '+wk.label.toUpperCase()+' SUMMER OF FAME'+NL;
+  t+=SEP+NL+NL;
+  if(streakW)   t+='🔥 Training Streak:   '+streakW.nick+' — '+streakW.weekStreak+' consecutive day'+(streakW.weekStreak!==1?'s':'')+' of complete training'+NL;
+  if(jugW)      t+='🎯 Juggling Record:   '+jugW.nick+' — '+jugW.weekPR+' juggles (personal best this week)'+NL;
+  if(improvedW&&improvedW.improvement>0) t+='📈 Most Improved:     '+improvedW.nick+' — +'+improvedW.improvement+' juggle improvement across '+improvedW.jugSessions+' sessions'+NL;
+  if(!streakW&&!jugW&&!improvedW) t+='Data is still coming in — check the SOF tab for live standings.'+NL;
+  t+=NL+'These results are live on the Summer of Fame tab in the training app. Encourage your daughter to check it — she can see exactly where she stands and what it takes to earn a spot.'+NL+NL;
+
+  t+=SEP+NL;
+  t+='📊 TEAM PARTICIPATION — '+wk.label+NL;
+  t+=SEP+NL+NL;
+  t+='• '+participated.length+' of '+PLAYERS.length+' players logged at least one training day'+NL;
+  t+='• '+totalCompleteDays+' total complete training days across the team'+NL;
+  t+='• '+totalJugSessions+' juggling sessions logged'+NL;
+  if(fullDays.length>0) t+='• '+fullDays.length+' player'+(fullDays.length!==1?'s':'')+' completed 5+ days: '+fullDays.map(function(p){return p.nick;}).join(', ')+NL;
+  t+=NL+'Participation is the foundation. Showing up matters — even on the hard days.'+NL+NL;
+
+  t+=SEP+NL;
+  t+='⭐ CHAMPIONS DO EXTRA — Player Highlights'+NL;
+  t+=SEP+NL+NL;
+  t+='Here’s what your players were up to beyond the standard program:'+NL+NL;
+
+  var cdeEntries=[];
+  PLAYERS.forEach(function(p){
+    var ws=getWeekStats(p.name,wk.start,wk.end);
+    var entries=getCDEJournal(p.name).filter(function(e){return e.date>=wk.start&&e.date<=wk.end;});
+    var nick=getDisplayName(p.name);
+    if(entries.length>0){
+      cdeEntries.push('• '+nick+': "'+entries[0].text+'"');
+    } else if(ws.completeDays>0){
+      cdeEntries.push('• '+nick+': Completed '+ws.completeDays+' training day'+(ws.completeDays!==1?'s':'')+' — great consistency!');
+    }
+  });
+  t+=(cdeEntries.length>0?cdeEntries.join(NL):'No CDE activities logged yet — remind your daughter that anything counts!')+NL+NL;
+  t+='Every one of these entries matters. The point isn’t perfection — it’s pattern. We’re building habits that will serve these girls well beyond soccer.'+NL+NL;
+
+  t+=SEP+NL;
+  t+='💪 LOOKING AHEAD — '+nextWkStr+NL;
+  t+=SEP+NL+NL;
+  t+=(isPast?'As we head into '+nextWkStr+', the':'This week isn’t over yet — the')+' Summer of Fame resets each Monday. Every player has a fresh chance to lead the board. Consistency compounds. The player who shows up every single day — even when it’s hard — is the one who peaks when it counts.'+NL+NL;
+  t+='Encourage your daughter to:'+NL;
+  t+='  ✓ Complete her Ball Skills and Strength Training daily'+NL;
+  t+='  ✓ Log her juggling — every session, every count'+NL;
+  t+='  ✓ Add something extra to her CDE log'+NL;
+  t+='  ✓ Check the Summer of Fame tab to track her progress'+NL+NL;
+  t+='Thank you for supporting her through this program. It makes all the difference.'+NL+NL;
+  t+='Doing the ordinary things, extraordinarily —'+NL;
+  t+='Coach Will'+NL+NL;
+  t+='─'.repeat(41)+NL;
+  t+='Training app: https://stanmore-byte.github.io/summer-masters/'+NL;
+  return t;
 }
 
 function openRecapModal(weekIdx){
