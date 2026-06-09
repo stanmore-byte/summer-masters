@@ -2690,53 +2690,55 @@ function hofNav(dir){
   if(changed)saveRoster(roster);
 })();
 
-// ── INFO POPUP SYSTEM ─────────────────────────────────────────
-var TIP_DATA = {
-  'streak_daily':{icon:'🔥',title:'Day Streak',body:'Counts consecutive days ending YESTERDAY where you completed all Ball Skills + Strength Training (100% each). Today is ongoing — finish today to extend your streak tonight. Missing even one day resets it to zero.'},
-  'streak_juggling':{icon:'🎯',title:'Juggling Streak',body:'Counts consecutive days ending yesterday where you logged at least one juggling session. It\'s separate from your training streak — you can have a juggling streak even on rest days. Missing one day resets it.'},
-  'consistency':{icon:'📊',title:'Summer Consistency',body:'Blue bar = days you were active (logged anything). Grey bar = elapsed days with no activity. Percentage = active days ÷ days elapsed since May 30. Hit 80%+ to turn the bar green. This shows how consistent you\'ve been across the whole summer.'},
-  'leaderboard':{icon:'🏆',title:'Leaderboard Ranking',body:'Rankings reset every Monday — the leaderboard shows THIS WEEK\'S performance only. Ranking order:\n1️⃣ Consecutive days completed this week\n2️⃣ Summer running streak (tiebreaker)\n3️⃣ Total summer training days\n4️⃣ This week\'s juggling record'},
-  'hof_week':{icon:'⭐',title:'Hall of Fame — Weekly Reset',body:'Each week runs Monday to Sunday. Winners are locked in at Sunday midnight Pacific time. Use ◀ ▶ to browse past weeks. A new competition starts every Monday — anyone can win any week!'},
-  'hof_streak':{icon:'🔥',title:'Training Streak Award',body:'Longest consecutive run of fully complete days (Ball Skills + Strength = 100%) within this Mon–Sun week.\n\nTiebreakers:\n1. Summer running streak\n2. Total summer active days\n3. This week\'s juggling record'},
-  'hof_juggling':{icon:'🎯',title:'Juggling Record Award',body:'Your single best juggling count logged on any day this week. Ties broken by training streak, then summer streak. You need at least one session logged this week to qualify.'},
-  'hof_improved':{icon:'📈',title:'Most Improved Award',body:'Requires 3+ juggling sessions this week. Measures: your BEST count of the week minus your FIRST count of the week. A player who goes from 20 → 45 scores +25. Shows growth within the week, not raw skill.'}
-};
 
-
-// ── INFO POPUP SYSTEM ─────────────────────────────────────────
+// ── TOOLTIP SYSTEM — self-contained, creates overlay on demand ──
+function _getTipOverlay(){
+  var ov=document.getElementById('_tipOv');
+  if(ov)return ov;
+  ov=document.createElement('div');
+  ov.id='_tipOv';
+  ov.style.cssText='display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+  ov.innerHTML='<div style="background:#0f172a;border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:22px 22px 20px;max-width:340px;width:100%;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.9)">'
+    +'<button id="_tipClose" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.1);border:none;border-radius:7px;color:rgba(255,255,255,.8);width:28px;height:28px;font-size:15px;cursor:pointer;line-height:1">&#x2715;</button>'
+    +'<div id="_tipIcon" style="font-size:1.9em;margin-bottom:8px;line-height:1"></div>'
+    +'<div id="_tipTitle" style="font-weight:900;font-size:.98em;color:#fff;margin-bottom:10px;padding-right:28px;line-height:1.3"></div>'
+    +'<div id="_tipBody" style="font-size:.84em;color:rgba(255,255,255,.8);line-height:1.65"></div>'
+    +'</div>';
+  document.body.appendChild(ov);
+  document.getElementById('_tipClose').onclick=function(){_closeTip();};
+  ov.onclick=function(e){if(e.target===ov)_closeTip();};
+  return ov;
+}
 function showTip(key){
   var tip=TIP_DATA[key];
   if(!tip)return;
-  var ov=document.getElementById('tip-overlay');
-  if(!ov)return;
-  var ic=document.getElementById('tip-card-icon');
-  var ti=document.getElementById('tip-card-title');
-  var bo=document.getElementById('tip-card-body');
-  if(ic)ic.textContent=tip.icon;
-  if(ti)ti.textContent=tip.title;
-  if(bo)bo.innerHTML=tip.body.replace(/\n/g,'<br>');
+  var ov=_getTipOverlay();
+  document.getElementById('_tipIcon').textContent=tip.icon;
+  document.getElementById('_tipTitle').textContent=tip.title;
+  document.getElementById('_tipBody').innerHTML=tip.body.replace(/\n/g,'<br>');
   ov.style.display='flex';
+  ov.style.alignItems='center';
+  ov.style.justifyContent='center';
 }
-function closeTip(){
-  var ov=document.getElementById('tip-overlay');
+function _closeTip(){
+  var ov=document.getElementById('_tipOv');
   if(ov)ov.style.display='none';
 }
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeTip();});
-// Capture phase ensures we catch clicks before any stopPropagation in child handlers
+document.addEventListener('keydown',function(e){if(e.key==='Escape')_closeTip();});
 document.addEventListener('click',function(e){
   var el=e.target;
-  while(el&&el!==document){
-    if(el.classList&&el.classList.contains('tip-icon')){
+  for(var i=0;i<6;i++){
+    if(!el||el===document.body)break;
+    if(el.getAttribute&&el.getAttribute('data-tip')){
+      showTip(el.getAttribute('data-tip'));
       e.stopPropagation();
-      var key=el.getAttribute('data-tip');
-      if(key)showTip(key);
       return;
     }
     el=el.parentNode;
   }
-  var ov=document.getElementById('tip-overlay');
-  if(ov&&ov.style.display==='flex'&&e.target===ov)closeTip();
 },true);
+
+
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeTip();});
 
@@ -2747,14 +2749,5 @@ if(state.current){
 }
 </script>
 
-<!-- ── INFO POPUP OVERLAY ── -->
-<div id="tip-overlay" onclick="if(event.target===this)closeTip()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;padding:20px">
-  <div id="tip-card" style="background:#111827;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:22px 24px;max-width:360px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.8)">
-    <button onclick="closeTip()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.1);border:none;border-radius:8px;color:rgba(255,255,255,.7);width:28px;height:28px;cursor:pointer;font-size:1em">✕</button>
-    <div id="tip-card-icon" style="font-size:1.8em;margin-bottom:8px"></div>
-    <div id="tip-card-title" style="font-weight:900;font-size:1em;color:#fff;margin-bottom:10px;padding-right:28px;line-height:1.3"></div>
-    <div id="tip-card-body" style="font-size:.85em;color:rgba(255,255,255,.78);line-height:1.65"></div>
-  </div>
-</div>
 </body>
 </html                                   
