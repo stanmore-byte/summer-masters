@@ -2702,35 +2702,42 @@ var TIP_DATA = {
   'hof_improved':{icon:'📈',title:'Most Improved Award',body:'Requires 3+ juggling sessions this week. Measures: your BEST count of the week minus your FIRST count of the week. A player who goes from 20 → 45 scores +25. Shows growth within the week, not raw skill.'}
 };
 
+
+// ── INFO POPUP SYSTEM ─────────────────────────────────────────
 function showTip(key){
-  var tip=TIP_DATA[key];if(!tip)return;
+  var tip=TIP_DATA[key];
+  if(!tip)return;
   var ov=document.getElementById('tip-overlay');
+  if(!ov)return;
   var ic=document.getElementById('tip-card-icon');
   var ti=document.getElementById('tip-card-title');
   var bo=document.getElementById('tip-card-body');
-  if(!ov)return;
   if(ic)ic.textContent=tip.icon;
   if(ti)ti.textContent=tip.title;
-  if(bo)bo.innerHTML=tip.body.replace(/\\n/g,'<br>').replace(/\n/g,'<br>');
+  if(bo)bo.innerHTML=tip.body.replace(/\n/g,'<br>');
   ov.style.display='flex';
 }
 function closeTip(){
   var ov=document.getElementById('tip-overlay');
-
-// ── TIP EVENT DELEGATION (no inline onclick needed) ──────────────
-document.addEventListener('click', function(e) {
-  var icon = e.target.closest('.tip-icon');
-  if (icon) {
-    e.stopPropagation();
-    var key = icon.getAttribute('data-tip');
-    if (key) showTip(key);
-    return;
-  }
-  // Click outside tip card closes it
-  if (e.target.id === 'tip-overlay') closeTip();
-});
   if(ov)ov.style.display='none';
 }
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeTip();});
+// Capture phase ensures we catch clicks before any stopPropagation in child handlers
+document.addEventListener('click',function(e){
+  var el=e.target;
+  while(el&&el!==document){
+    if(el.classList&&el.classList.contains('tip-icon')){
+      e.stopPropagation();
+      var key=el.getAttribute('data-tip');
+      if(key)showTip(key);
+      return;
+    }
+    el=el.parentNode;
+  }
+  var ov=document.getElementById('tip-overlay');
+  if(ov&&ov.style.display==='flex'&&e.target===ov)closeTip();
+},true);
+
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeTip();});
 
 loadState();refreshPlayers();renderSelector();
