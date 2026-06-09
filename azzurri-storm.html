@@ -565,7 +565,7 @@ body{background:var(--az-dark);}
 
 
 /* ── INFO POPUP SYSTEM ── */
-.tip-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:10px;font-weight:900;cursor:pointer;flex-shrink:0;margin-left:6px;transition:all .15s;user-select:none;font-style:normal;border:1px solid rgba(255,255,255,.2);vertical-align:middle}
+.tip-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:11px;font-weight:900;cursor:pointer;flex-shrink:0;margin-left:6px;transition:all .15s;user-select:none;-webkit-user-select:none;font-style:normal;border:1px solid rgba(255,255,255,.2);vertical-align:middle;touch-action:manipulation;-webkit-tap-highlight-color:rgba(14,165,233,.3)}
 .tip-icon:hover{background:rgba(14,165,233,.35);color:#fff;border-color:#0EA5E9}
 #tip-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center;padding:20px}
 #tip-overlay.open{display:flex}
@@ -2729,18 +2729,21 @@ function _closeTip(){
   if(ov)ov.style.display='none';
 }
 document.addEventListener('keydown',function(e){if(e.key==='Escape')_closeTip();});
-document.addEventListener('click',function(e){
+function _handleTipEvent(e){
   var el=e.target;
   for(var i=0;i<6;i++){
     if(!el||el===document.body)break;
     if(el.getAttribute&&el.getAttribute('data-tip')){
-      showTip(el.getAttribute('data-tip'));
+      if(e.cancelable)e.preventDefault();
       e.stopPropagation();
+      showTip(el.getAttribute('data-tip'));
       return;
     }
     el=el.parentNode;
   }
-},true);
+}
+document.addEventListener('click',_handleTipEvent,true);
+document.addEventListener('touchend',_handleTipEvent,{capture:true,passive:false});
 
 
 
