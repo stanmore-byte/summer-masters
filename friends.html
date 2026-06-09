@@ -2591,6 +2591,91 @@ function getSummerOfFame(weekIdx){
 }
 
 
+
+function buildSofSummary(hof, weekIdx){
+  var wk = hof.week;
+  var today = pacificTodayStr();
+  var isPast = today > wk.end;
+  var isCurrent = today >= wk.start && today <= wk.end;
+
+  // Helper: get player nick for display
+  function pName(p){ return p ? p.nick : null; }
+  function pFirst(arr){ return arr && arr.length > 0 ? arr[0] : null; }
+
+  var streakWinner   = pFirst(hof.byStreak);
+  var jugWinner      = pFirst(hof.byJuggling);
+  var improvedWinner = pFirst(hof.byImproved);
+
+  var daysLeft = 0;
+  if(isCurrent){
+    var endDate = new Date(wk.end + 'T23:59:59');
+    var now = new Date(today + 'T12:00:00');
+    daysLeft = Math.max(0, Math.round((endDate - now) / 86400000));
+  }
+
+  var bg, border, emoji, headline, body;
+
+  if(isPast){
+    // Past week — announce champions
+    bg     = 'rgba(255,215,0,.07)';
+    border = 'rgba(255,215,0,.3)';
+    emoji  = '🏆';
+    headline = wk.label + ' Champions';
+
+    var parts = [];
+    if(streakWinner)
+      parts.push('<strong>'+pName(streakWinner)+'</strong> led Training Streak with '+streakWinner.weekStreak+' day'+(streakWinner.weekStreak!==1?'s':'')+' of consistent work');
+    if(jugWinner)
+      parts.push('<strong>'+pName(jugWinner)+'</strong> set the Juggling Record with '+jugWinner.weekPR+' juggles');
+    if(improvedWinner && improvedWinner.improvement > 0)
+      parts.push('<strong>'+pName(improvedWinner)+'</strong> showed the biggest improvement, adding +'+improvedWinner.improvement+' juggles across '+improvedWinner.jugSessions+' sessions');
+
+    if(parts.length === 0){
+      body = 'No data was recorded for this week. Hopefully next week the girls will be firing on all cylinders!';
+    } else {
+      body = 'Congratulations to the ' + wk.label + ' Summer of Fame winners! '
+        + parts.join('. ') + '. Amazing work — keep that momentum going!';
+    }
+
+  } else if(isCurrent){
+    // Current week — motivate
+    bg     = 'rgba(14,165,233,.07)';
+    border = 'rgba(14,165,233,.3)';
+    emoji  = '⚡';
+    headline = wk.label + ' — In Progress';
+
+    var parts = [];
+    if(streakWinner)
+      parts.push('<strong>'+pName(streakWinner)+'</strong> currently leads Training Streak with '+streakWinner.weekStreak+' day'+(streakWinner.weekStreak!==1?'s':''));
+    if(jugWinner)
+      parts.push('<strong>'+pName(jugWinner)+'</strong> holds the current Juggling Record with '+jugWinner.weekPR+' juggles');
+
+    var dayStr = daysLeft === 0 ? 'Today is the last day' : daysLeft + ' day'+(daysLeft!==1?'s':'')+' left';
+
+    if(parts.length === 0){
+      body = 'The week has just begun — get your training in and claim a spot on the Summer of Fame! ' + dayStr + ' to make your mark.';
+    } else {
+      body = parts.join(' and ') + '. ' + dayStr + ' — every session counts. Can you take the top spot?';
+    }
+
+  } else {
+    // Future week
+    bg     = 'rgba(255,255,255,.04)';
+    border = 'rgba(255,255,255,.1)';
+    emoji  = '📅';
+    headline = wk.label + ' — Coming Up';
+    body = 'This week starts on ' + wk.start + '. Keep training and be ready to compete!';
+  }
+
+  return '<div style="background:'+bg+';border:1px solid '+border+';border-radius:12px;padding:14px 16px;margin-bottom:16px">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+    +'<span style="font-size:1.3em">'+emoji+'</span>'
+    +'<span style="font-weight:900;font-size:.9em;color:#fff">'+headline+'</span>'
+    +'</div>'
+    +'<div style="font-size:.82em;color:rgba(255,255,255,.78);line-height:1.65">'+body+'</div>'
+    +'</div>';
+}
+
 function renderSummerOfFame(){
   var el=document.getElementById('sof-container');
   if(!el)return;
@@ -2652,10 +2737,12 @@ function renderSummerOfFame(){
       +'</div>';
   }
 
+  var summaryHtml=buildSofSummary(hof,_sofWeekIdx);
   el.innerHTML='<div class="sof-wrap">'
     +'<div class="sof-header"><div class="sof-title">&#11088; Summer of Fame</div>'
     +'<div class="sof-sub">Winners of the week &mdash; keep earning your place '
     +'<i class="tip-icon" data-tip="hof_week">&#x2139;</i></div></div>'
+    +summaryHtml
     +navHtml
     +cat('Training Streak','&#128293;','#FF8C00','hof_streak',hof.byStreak,
       function(p){return p.weekStreak+' day'+(p.weekStreak!==1?'s':'');},
