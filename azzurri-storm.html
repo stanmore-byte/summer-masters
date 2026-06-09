@@ -1163,7 +1163,7 @@ function renderDailyModules(){
   if(jugStreak>0||jugBestStreak>0){
     jugStreakHtml='<div class="jug-streak-row"><span style="font-size:1.2em">🔥</span>'
       +'<span style="font-size:1.05em;font-weight:900;color:#0EA5E9;margin:0 4px">'+jugStreak+'</span>'
-      +'<span style="font-size:.76em;color:rgba(255,255,255,.5);flex:1">juggling streak <i class="tip-icon" onclick="showTip(\'streak_juggling\')">ℹ</i></span>'
+      +'<span style="font-size:.76em;color:rgba(255,255,255,.5);flex:1">juggling streak <i class="tip-icon" data-tip="streak_juggling">ℹ</i></span>'
       +(jugBestStreak>jugStreak?'<span style="font-size:.7em;color:rgba(14,165,233,.5)">Best: '+jugBestStreak+'</span>':'')
       +'</div>';
   }
@@ -2395,7 +2395,7 @@ function renderConsistencyBar(playerName){
   var activePct=total>0?active/total*100:0;
   var inactivePct=total>0?Math.max(0,(elapsed-active)/total*100):0;
   el.innerHTML='<div class="sc-header">'
-    +'<span class="sc-title">Summer Consistency <i class="tip-icon" onclick="showTip(\'consistency\')">ℹ</i></span>'
+    +'<span class="sc-title">Summer Consistency <i class="tip-icon" data-tip="consistency">ℹ</i></span>'
     +'<span class="sc-countdown"><span>'+cdText+'</span></span>'
     +'</div>'
     +'<div class="sc-bar-wrap">'
@@ -2658,7 +2658,7 @@ function renderHallOfFame(){
   }
 
   function cat(title,icon,color,tipKey,players,statFn,unitFn){
-    var tipBtn='<i class="tip-icon" onclick="showTip(\''+tipKey+'\')">&#x2139;</i>';
+    var tipBtn='<i class="tip-icon" data-tip="'+tipKey+'">&#x2139;</i>';
     return'<div class="hof-category">'
       +'<div class="hof-cat-hdr" style="background:'+color+'20;border-color:'+color+'40">'
       +'<span style="font-size:1.4em">'+icon+'</span>'
@@ -2671,7 +2671,7 @@ function renderHallOfFame(){
   el.innerHTML='<div class="hof-wrap">'
     +'<div class="hof-header"><div class="hof-title">&#11088; Hall of Fame</div>'
     +'<div class="hof-sub">Winners of the week &mdash; keep earning your place '
-    +'<i class="tip-icon" onclick="showTip(\'hof_week\')">&#x2139;</i></div></div>'
+    +'<i class="tip-icon" data-tip="hof_week">&#x2139;</i></div></div>'
     +navHtml
     +cat('Training Streak','&#128293;','#FF8C00','hof_streak',hof.byStreak,
       function(p){return p.weekStreak+' day'+(p.weekStreak!==1?'s':'');},
@@ -2720,6 +2720,19 @@ function showTip(key){
 }
 function closeTip(){
   var ov=document.getElementById('tip-overlay');
+
+// ── TIP EVENT DELEGATION (no inline onclick needed) ──────────────
+document.addEventListener('click', function(e) {
+  var icon = e.target.closest('.tip-icon');
+  if (icon) {
+    e.stopPropagation();
+    var key = icon.getAttribute('data-tip');
+    if (key) showTip(key);
+    return;
+  }
+  // Click outside tip card closes it
+  if (e.target.id === 'tip-overlay') closeTip();
+});
   if(ov)ov.style.display='none';
 }
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeTip();});
