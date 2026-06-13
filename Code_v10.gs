@@ -645,3 +645,43 @@ function fixHannahJune6() {
     '\u2705 Done!\n\nHannah (Howard) \u2192 Saturday June 6, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength Training: 6/6 \u2713\n\nDay marked as fully complete.'
   );
 }
+
+// \u2500\u2500 ONE-TIME FIX: Ellie June 5 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Sets all Ball Skills + Strength Training complete for June 5
+// Select fixEllieJune5 in dropdown \u2192 click Run
+function fixEllieJune5() {
+  const ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const date = '2026-06-05';
+  const now  = new Date().toISOString();
+
+  const dailySheet = getOrCreate(ss, 'U13_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const dRows = dailySheet.getDataRange().getValues();
+  let found = false;
+  for (let i = 1; i < dRows.length; i++) {
+    if (String(dRows[i][0]).trim() === 'Ellie' && fmtDate(dRows[i][1]) === date) {
+      const existingBS = dRows[i][2] ? String(dRows[i][2]).split(',').filter(Boolean) : [];
+      const existingST = dRows[i][3] ? String(dRows[i][3]).split(',').filter(Boolean) : [];
+      const bsSet = new Set([...existingBS,'bs1','bs2','bs3','bs4','bs5','bs6']);
+      const stSet = new Set([...existingST,'st1','st2','st3','st4','st5','st6']);
+      dailySheet.getRange(i+1,3,1,3).setValues([[
+        Array.from(bsSet).join(','),
+        Array.from(stSet).join(','),
+        now
+      ]]);
+      found = true;
+      Logger.log('Updated Ellie row for ' + date);
+      break;
+    }
+  }
+  if (!found) {
+    const newRow = dailySheet.getLastRow() + 1;
+    dailySheet.appendRow(['Ellie', date, 'bs1,bs2,bs3,bs4,bs5,bs6', 'st1,st2,st3,st4,st5,st6', now]);
+    dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+    Logger.log('Created Ellie row for ' + date);
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nEllie \u2192 Friday June 5, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength Training: 6/6 \u2713\n\nDay marked as fully complete.'
+  );
+}
