@@ -72,6 +72,23 @@ body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#000;color:#ff
 .train-item.strength .train-day{color:rgba(14,165,233,.6)}
 .train-desc{font-size:.86em;font-weight:600;flex:1;line-height:1.35}
 
+/* ── RUN LOG ── */
+.run-log{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;padding:2px 4px 12px 42px;margin-top:-2px}
+.run-log-field{display:flex;flex-direction:column;gap:3px}
+.run-log-field label{font-size:.6em;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em}
+.run-log-field input{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:.82em;padding:6px 8px;width:64px;font-family:inherit;outline:none;text-align:center}
+.run-log-field input:focus{border-color:#EF4444}
+.run-log-pace{font-size:.68em;color:#22C55E;font-weight:800;align-self:center;padding:6px 4px}
+
+/* ── PACE STATS ── */
+.pace-card{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.pace-title{font-size:.75em;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#22C55E;margin-bottom:8px}
+.pace-overall{font-size:1.5em;font-weight:900;margin-bottom:8px}
+.pace-overall span{font-size:.45em;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-left:6px;vertical-align:middle}
+.pace-weeks{display:flex;flex-wrap:wrap;gap:6px}
+.pace-week-chip{background:rgba(255,255,255,.06);border-radius:8px;padding:4px 10px;font-size:.7em;font-weight:700;color:rgba(255,255,255,.7)}
+.pace-empty{font-size:.78em;color:rgba(255,255,255,.4)}
+
 /* ── STRENGTH CARD ── */
 .strength-card{background:rgba(14,165,233,.06);border:1px solid rgba(14,165,233,.2);border-radius:12px;padding:12px 14px;margin-bottom:10px}
 .strength-title{font-size:.75em;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#0EA5E9;margin-bottom:8px}
@@ -257,6 +274,107 @@ function getDoneKey(n){return STORE_KEY+'_done_'+n.replace(/\s+/g,'_');}
 function getDone(n){try{return JSON.parse(localStorage.getItem(getDoneKey(n))||'[]');}catch(e){return[];}}
 function saveDone(n,arr){localStorage.setItem(getDoneKey(n),JSON.stringify(arr));}
 
+// ── RUN LOG (distance / time / perceived effort) ───────────────────
+function getRunLogKey(n){return STORE_KEY+'_runlog_'+n.replace(/\s+/g,'_');}
+function getRunLog(n){try{return JSON.parse(localStorage.getItem(getRunLogKey(n))||'{}');}catch(e){return{};}}
+function saveRunLog(n,obj){localStorage.setItem(getRunLogKey(n),JSON.stringify(obj));}
+
+// Only show distance/time/effort fields on actual running workouts (not strength/rest/mobility)
+function isRunItem(item){return !item.strength&&/(\bmi\b|mile|🏃)/i.test(item.desc);}
+
+// "24:30" or "24" -> seconds
+function parseTimeToSec(str){
+  str=(str||'').trim();
+  if(!str)return null;
+  if(str.indexOf(':')>=0){
+    var parts=str.split(':');
+    var m=parseInt(parts[0],10)||0,s=parseInt(parts[1],10)||0;
+    return m*60+s;
+  }
+  var n=parseFloat(str);
+  return isNaN(n)?null:Math.round(n*60);
+}
+function fmtSecToTime(sec){
+  if(sec==null||isNaN(sec))return'';
+  sec=Math.round(sec);
+  var m=Math.floor(sec/60),s=sec%60;
+  return m+':'+(s<10?'0':'')+s;
+}
+function fmtPace(sec,miles){
+  if(!sec||!miles)return'';
+  return fmtSecToTime(sec/miles)+' /mi';
+}
+
+function updateRunLog(itemId,field,value){
+  var log=getRunLog(state.current);
+  var entry=log[itemId]||{};
+  if(field==='distance'){
+    var d=parseFloat(value);
+    entry.distance=(value===''||isNaN(d))?null:d;
+  }else if(field==='time'){
+    entry.timeSec=parseTimeToSec(value);
+  }else if(field==='effort'){
+    var ef=parseInt(value,10);
+    entry.effort=isNaN(ef)?null:Math.max(1,Math.min(10,ef));
+  }
+  var item=getAllItems().find(function(it){return it.id===itemId;});
+  entry.date=item?item.date:'';
+  log[itemId]=entry;
+  saveRunLog(state.current,log);
+  sheetsPostHtcRun(state.current,itemId,entry);
+  var paceEl=document.getElementById('pace-'+itemId);
+  if(paceEl)paceEl.textContent=fmtPace(entry.timeSec,entry.distance);
+  renderPaceCard();
+}
+
+function sheetsPostHtcRun(playerName,itemId,entry){
+  if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0)return;
+  try{fetch(SHEETS_URL,{method:'POST',mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({team:'htc',player:playerName,type:'htc_run',data:{
+      itemId:itemId,date:entry.date||'',distance:entry.distance,timeSec:entry.timeSec,effort:entry.effort
+    }})
+  }).catch(function(){});}catch(e){}
+}
+
+// ── PACE STATS CARD ─────────────────────────────────────────────────
+function buildPaceCardHtml(){
+  var log=getRunLog(state.current);
+  var totalDist=0,totalSec=0,count=0;
+  var weekChips=[];
+  HTC_PLAN.forEach(function(phase){
+    phase.weeks.forEach(function(wk){
+      var wDist=0,wSec=0,wCount=0;
+      wk.items.forEach(function(item){
+        if(!isRunItem(item))return;
+        var e=log[item.id];
+        if(e&&e.distance&&e.timeSec){
+          wDist+=e.distance;wSec+=e.timeSec;wCount++;
+          totalDist+=e.distance;totalSec+=e.timeSec;count++;
+        }
+      });
+      if(wCount>0){
+        weekChips.push('<div class="pace-week-chip">'+wk.label+': '+fmtPace(wSec,wDist)+'</div>');
+      }
+    });
+  });
+  if(count===0){
+    return '<div class="pace-card"><div class="pace-title">🏃 Run Pace Tracker</div>'
+      +'<div class="pace-empty">Log your distance and time below each run to see your average pace here.</div></div>';
+  }
+  var html='<div class="pace-card"><div class="pace-title">🏃 Run Pace Tracker</div>'
+    +'<div class="pace-overall">'+fmtPace(totalSec,totalDist)+'<span>avg pace · '+count+' run'+(count===1?'':'s')+' logged · '+totalDist.toFixed(1)+' mi total</span></div>';
+  if(weekChips.length){
+    html+='<div class="pace-weeks">'+weekChips.join('')+'</div>';
+  }
+  html+='</div>';
+  return html;
+}
+function renderPaceCard(){
+  var el=document.getElementById('pace-wrap');
+  if(el)el.innerHTML=buildPaceCardHtml();
+}
+
 function toggleItem(itemId){
   var done=getDone(state.current);
   var idx=done.indexOf(itemId);
@@ -292,7 +410,8 @@ function renderPlan(){
   var wrap=document.getElementById('plan-wrap');
   if(!wrap)return;
   var done=getDone(state.current);
-  var html='';
+  var runLog=getRunLog(state.current);
+  var html='<div id="pace-wrap"></div>';
 
   HTC_PLAN.forEach(function(phase){
     html+='<div class="phase-hdr">'+phase.phase+'</div>';
@@ -314,6 +433,19 @@ function renderPlan(){
           +'<span class="train-day">'+item.day+'</span>'
           +'<span class="train-desc">'+item.desc+'</span>'
           +'</div>';
+        if(isRunItem(item)){
+          var e=runLog[item.id]||{};
+          var distVal=(e.distance!=null)?e.distance:'';
+          var timeVal=(e.timeSec!=null)?fmtSecToTime(e.timeSec):'';
+          var effVal=(e.effort!=null)?e.effort:'';
+          var pace=fmtPace(e.timeSec,e.distance);
+          html+='<div class="run-log">'
+            +'<div class="run-log-field"><label>Miles</label><input type="number" step="0.1" min="0" inputmode="decimal" value="'+distVal+'" onchange="updateRunLog(\''+item.id+'\',\'distance\',this.value)"></div>'
+            +'<div class="run-log-field"><label>Time (m:ss)</label><input type="text" placeholder="m:ss" inputmode="numeric" value="'+timeVal+'" onchange="updateRunLog(\''+item.id+'\',\'time\',this.value)"></div>'
+            +'<div class="run-log-field"><label>Effort (1–10)</label><input type="number" min="1" max="10" step="1" inputmode="numeric" value="'+effVal+'" onchange="updateRunLog(\''+item.id+'\',\'effort\',this.value)"></div>'
+            +'<div class="run-log-pace" id="pace-'+item.id+'">'+pace+'</div>'
+            +'</div>';
+        }
       });
       html+='</div>';
     });
@@ -328,6 +460,7 @@ function renderPlan(){
   html+='<div class="strength-note">15–20 minutes · log via the Strength checkbox in each week</div></div>';
 
   wrap.innerHTML=html;
+  renderPaceCard();
 }
 
 // ── REGISTER ──────────────────────────────────────────────────────
@@ -372,6 +505,7 @@ function selectPlayer(name){
   document.getElementById('ah-name').textContent=name;
   renderPlan();
   updateProgress();
+  sheetsLoadHtcRuns(name,function(){renderPlan();updateProgress();});
 }
 function goSelect(){
   state.current=null;saveState();
@@ -406,6 +540,40 @@ function sheetsPostHtc(playerName,doneArr){
     headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({team:'htc',player:playerName,type:'htc_done',data:{done:doneArr}})
   }).catch(function(){});}catch(e){}
+}
+
+// Pull this player's logged runs from Sheets (cross-device sync) and merge
+// into the local run log cache, keeping whichever copy of each run is newer.
+function sheetsLoadHtcRuns(playerName,onDone){
+  if(!SHEETS_URL||SHEETS_URL.indexOf('YOUR_')===0){if(onDone)onDone();return;}
+  var cbName='_htcRuns'+Date.now();
+  var script=document.createElement('script');
+  var done=false;
+  var timer=setTimeout(function(){
+    if(!done){done=true;if(onDone)onDone();}
+  },6000);
+  window[cbName]=function(resp){
+    if(done)return;done=true;clearTimeout(timer);
+    try{document.head.removeChild(script);}catch(e){}
+    delete window[cbName];
+    if(resp&&resp.ok&&resp.data&&resp.data.runs)mergeHtcRuns(playerName,resp.data.runs);
+    if(onDone)onDone();
+  };
+  script.onerror=function(){if(!done){done=true;clearTimeout(timer);if(onDone)onDone();}};
+  script.src=SHEETS_URL+'?team=htc&player='+encodeURIComponent(playerName)+'&callback='+cbName+'&_t='+Date.now();
+  document.head.appendChild(script);
+}
+
+function mergeHtcRuns(playerName,remoteRuns){
+  var local=getRunLog(playerName);
+  var changed=false;
+  for(var itemId in remoteRuns){
+    if(!local[itemId]){
+      local[itemId]=remoteRuns[itemId];
+      changed=true;
+    }
+  }
+  if(changed)saveRunLog(playerName,local);
 }
 
 

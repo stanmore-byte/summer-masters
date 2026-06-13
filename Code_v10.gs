@@ -54,8 +54,13 @@ function fmtDate(val) {
 // ── SINGLE PLAYER READ ───────────────────────────────────────────
 
 function getAllPlayerData(team, player) {
-  const pfx = team === 'u13' ? 'U13' : (team === 'frn' ? 'FRN' : 'U11');
   const ss  = SpreadsheetApp.openById(SPREADSHEET_ID);
+
+  if (team === 'htc') {
+    return { runs: getHtcRunData(ss, player) };
+  }
+
+  const pfx = team === 'u13' ? 'U13' : (team === 'frn' ? 'FRN' : 'U11');
   return {
     daily   : getDailyData   (ss, pfx, player),
     juggling: getJugglingData(ss, pfx, player),
@@ -260,11 +265,17 @@ function getPlansData(ss, pfx, player) {
 // ── WRITE ─────────────────────────────────────────────────────────
 
 function savePlayerData(payload) {
-  const pfx    = payload.team === 'u13' ? 'U13' : (payload.team === 'frn' ? 'FRN' : 'U11');
   const player = payload.player;
   const ss     = SpreadsheetApp.openById(SPREADSHEET_ID);
   const d      = payload.data || {};
   const t      = payload.type;
+
+  if (payload.team === 'htc') {
+    if (t === 'htc_run') saveHtcRunRow(ss, player, d);
+    return;
+  }
+
+  const pfx    = payload.team === 'u13' ? 'U13' : (payload.team === 'frn' ? 'FRN' : 'U11');
 
   if      (t === 'daily')           saveDailyRow      (ss, pfx, player, d);
   else if (t === 'juggling')        saveJugglingRow   (ss, pfx, player, d);
@@ -332,6 +343,53 @@ function migrateFriendsToFRN() {
   SpreadsheetApp.getUi().alert('Done! Moved ' + moved + ' rows to FRN_ tabs. Check the Execution log for details.');
 }
 // ─────────────────────────────────────────────────────────────────
+
+// ── HTC RUN LOG (Hood to Coast distance/time/effort) ────────────────
+function saveHtcRunRow(ss, player, d) {
+  const sheet = getOrCreate(ss, 'HTC_Runs',
+    ['Player','Item ID','Date','Distance (mi)','Time (sec)','Effort (RPE)','Last Updated']);
+  const rows = sheet.getDataRange().getValues();
+  const now  = new Date().toISOString();
+
+  const itemId   = String(d.itemId || '');
+  const date     = d.date || '';
+  const distance = (d.distance === null || d.distance === undefined) ? '' : d.distance;
+  const timeSec  = (d.timeSec  === null || d.timeSec  === undefined) ? '' : d.timeSec;
+  const effort   = (d.effort   === null || d.effort   === undefined) ? '' : d.effort;
+
+  let found = false;
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === player && String(rows[i][1]).trim() === itemId) {
+      sheet.getRange(i+1, 3, 1, 5).setValues([[date, distance, timeSec, effort, now]]);
+      found = true; break;
+    }
+  }
+  if (!found) {
+    const newRow = sheet.getLastRow() + 1;
+    sheet.appendRow([player, itemId, date, distance, timeSec, effort, now]);
+    sheet.getRange(newRow, 3).setNumberFormat('@STRING@');
+  }
+}
+
+function getHtcRunData(ss, player) {
+  const runs  = {};
+  const sheet = ss.getSheetByName('HTC_Runs');
+  if (!sheet) return runs;
+
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() !== player) continue;
+    const itemId = String(rows[i][1]).trim();
+    if (!itemId) continue;
+    runs[itemId] = {
+      date    : fmtDate(rows[i][2]),
+      distance: rows[i][3] === '' ? null : Number(rows[i][3]),
+      timeSec : rows[i][4] === '' ? null : Number(rows[i][4]),
+      effort  : rows[i][5] === '' ? null : Number(rows[i][5])
+    };
+  }
+  return runs;
+}
 
 function saveDailyRow(ss, pfx, player, dayObj) {
   const sheet = getOrCreate(ss, pfx + '_Daily',
