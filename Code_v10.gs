@@ -743,3 +743,328 @@ function fixEllieJune5() {
     '\u2705 Done!\n\nEllie \u2192 Friday June 5, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength Training: 6/6 \u2713\n\nDay marked as fully complete.'
   );
 }
+
+// \u2500\u2500 ONE-TIME FIX: Reese June 14, 18, 19 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// June 14: all BS + all ST + juggling 82
+// June 18: all BS + all ST + juggling 58
+// June 19: all BS + ST minus Push-ups (st1) & Plank (st4) + juggling 38
+// Select fixReeseJune14_18_19 in dropdown \u2192 click Run
+function fixReeseJune14_18_19() {
+  const ss  = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const now = new Date().toISOString();
+  const bs  = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const stFull    = 'st1,st2,st3,st4,st5,st6';
+  const stPartial = 'st2,st3,st5,st6'; // no Push-ups (st1) or Plank (st4) \u2014 airport, dirty ground!
+
+  const entries = [
+    { date: '2026-06-14', st: stFull,    juggles: 82 },
+    { date: '2026-06-18', st: stFull,    juggles: 58 },
+    { date: '2026-06-19', st: stPartial, juggles: 38 },
+  ];
+
+  const dailySheet = getOrCreate(ss, 'U13_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const jugSheet = getOrCreate(ss, 'U13_Juggling',
+    ['Player','Date','Juggle Count','Last Updated']);
+
+  entries.forEach(function(entry) {
+    // \u2500\u2500 Daily \u2500\u2500
+    const dRows = dailySheet.getDataRange().getValues();
+    let found = false;
+    for (let i = 1; i < dRows.length; i++) {
+      if (String(dRows[i][0]).trim() === 'Reese' && fmtDate(dRows[i][1]) === entry.date) {
+        dailySheet.getRange(i+1, 3, 1, 3).setValues([[bs, entry.st, now]]);
+        found = true;
+        Logger.log('Updated Reese daily row for ' + entry.date);
+        break;
+      }
+    }
+    if (!found) {
+      const newRow = dailySheet.getLastRow() + 1;
+      dailySheet.appendRow(['Reese', entry.date, bs, entry.st, now]);
+      dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+      Logger.log('Created Reese daily row for ' + entry.date);
+    }
+
+    // \u2500\u2500 Juggling \u2500\u2500
+    const jRows = jugSheet.getDataRange().getValues();
+    let jugFound = false;
+    for (let i = 1; i < jRows.length; i++) {
+      if (String(jRows[i][0]).trim() === 'Reese' && fmtDate(jRows[i][1]) === entry.date) {
+        jugSheet.getRange(i+1, 3, 1, 2).setValues([[entry.juggles, now]]);
+        jugFound = true;
+        Logger.log('Updated Reese juggling for ' + entry.date);
+        break;
+      }
+    }
+    if (!jugFound) {
+      const newRow = jugSheet.getLastRow() + 1;
+      jugSheet.appendRow(['Reese', entry.date, entry.juggles, now]);
+      jugSheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+      Logger.log('Created Reese juggling row for ' + entry.date);
+    }
+  });
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nReese \u2192 3 days logged:\n\u2022 Jun 14: BS 6/6 \u2713 \u00b7 ST 6/6 \u2713 \u00b7 Juggling: 82\n\u2022 Jun 18: BS 6/6 \u2713 \u00b7 ST 6/6 \u2713 \u00b7 Juggling: 58\n\u2022 Jun 19: BS 6/6 \u2713 \u00b7 ST 4/6 \u2713 (no Push-ups/Plank) \u00b7 Juggling: 38'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Ellie Polak June 16 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Sets all Ball Skills + Strength Training complete for June 16
+// Select fixElliePolakJune16 in dropdown \u2192 click Run
+function fixElliePolakJune16() {
+  const ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const date = '2026-06-16';
+  const now  = new Date().toISOString();
+  const bs   = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st   = 'st1,st2,st3,st4,st5,st6';
+
+  const dailySheet = getOrCreate(ss, 'U13_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const dRows = dailySheet.getDataRange().getValues();
+  let found = false;
+  for (let i = 1; i < dRows.length; i++) {
+    if (String(dRows[i][0]).trim() === 'Ellie' && fmtDate(dRows[i][1]) === date) {
+      const existingBS = dRows[i][2] ? String(dRows[i][2]).split(',').filter(Boolean) : [];
+      const existingST = dRows[i][3] ? String(dRows[i][3]).split(',').filter(Boolean) : [];
+      const bsSet = new Set([...existingBS,'bs1','bs2','bs3','bs4','bs5','bs6']);
+      const stSet = new Set([...existingST,'st1','st2','st3','st4','st5','st6']);
+      dailySheet.getRange(i+1, 3, 1, 3).setValues([[
+        Array.from(bsSet).join(','),
+        Array.from(stSet).join(','),
+        now
+      ]]);
+      found = true;
+      Logger.log('Updated Ellie row for ' + date);
+      break;
+    }
+  }
+  if (!found) {
+    const newRow = dailySheet.getLastRow() + 1;
+    dailySheet.appendRow(['Ellie', date, bs, st, now]);
+    dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+    Logger.log('Created Ellie row for ' + date);
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nEllie (Polak) \u2192 Tuesday June 16, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength Training: 6/6 \u2713\n\nDay marked as fully complete.'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Shailynn (U11) June 13 & 14 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Sets all Ball Skills + Strength Training complete for both dates
+// Select fixShailynnJune13And14 in dropdown \u2192 click Run
+function fixShailynnJune13And14() {
+  const ss  = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const now = new Date().toISOString();
+  const bs  = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st  = 'st1,st2,st3,st4,st5,st6';
+  const dates = ['2026-06-13', '2026-06-14'];
+
+  const dailySheet = getOrCreate(ss, 'U11_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+
+  dates.forEach(function(date) {
+    const dRows = dailySheet.getDataRange().getValues();
+    let found = false;
+    for (let i = 1; i < dRows.length; i++) {
+      if (String(dRows[i][0]).trim() === 'Shailynn' && fmtDate(dRows[i][1]) === date) {
+        const existingBS = dRows[i][2] ? String(dRows[i][2]).split(',').filter(Boolean) : [];
+        const existingST = dRows[i][3] ? String(dRows[i][3]).split(',').filter(Boolean) : [];
+        const bsSet = new Set([...existingBS,'bs1','bs2','bs3','bs4','bs5','bs6']);
+        const stSet = new Set([...existingST,'st1','st2','st3','st4','st5','st6']);
+        dailySheet.getRange(i+1, 3, 1, 3).setValues([[
+          Array.from(bsSet).join(','),
+          Array.from(stSet).join(','),
+          now
+        ]]);
+        found = true;
+        Logger.log('Updated Shailynn row for ' + date);
+        break;
+      }
+    }
+    if (!found) {
+      const newRow = dailySheet.getLastRow() + 1;
+      dailySheet.appendRow(['Shailynn', date, bs, st, now]);
+      dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+      Logger.log('Created Shailynn row for ' + date);
+    }
+  });
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nShailynn (U11) \u2192 2 days logged:\n\u2022 Jun 13 (Sat): BS 6/6 \u2713 \u00b7 ST 6/6 \u2713\n\u2022 Jun 14 (Sun): BS 6/6 \u2713 \u00b7 ST 6/6 \u2713'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Audrey (U11) & Hannah (U13) June 26 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Sets all Ball Skills + Strength Training complete for both players
+// Select fixAudreyAndHannahJune26 in dropdown \u2192 click Run
+function fixAudreyAndHannahJune26() {
+  const ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const date = '2026-06-26';
+  const now  = new Date().toISOString();
+  const bs   = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st   = 'st1,st2,st3,st4,st5,st6';
+
+  function upsertDaily(sheet, player) {
+    const dRows = sheet.getDataRange().getValues();
+    for (let i = 1; i < dRows.length; i++) {
+      if (String(dRows[i][0]).trim() === player && fmtDate(dRows[i][1]) === date) {
+        const bsSet = new Set([...(dRows[i][2]?String(dRows[i][2]).split(',').filter(Boolean):[]),'bs1','bs2','bs3','bs4','bs5','bs6']);
+        const stSet = new Set([...(dRows[i][3]?String(dRows[i][3]).split(',').filter(Boolean):[]),'st1','st2','st3','st4','st5','st6']);
+        sheet.getRange(i+1,3,1,3).setValues([[Array.from(bsSet).join(','),Array.from(stSet).join(','),now]]);
+        Logger.log('Updated ' + player + ' for ' + date);
+        return;
+      }
+    }
+    const newRow = sheet.getLastRow() + 1;
+    sheet.appendRow([player, date, bs, st, now]);
+    sheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+    Logger.log('Created ' + player + ' row for ' + date);
+  }
+
+  upsertDaily(getOrCreate(ss, 'U11_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']), 'Audrey');
+  upsertDaily(getOrCreate(ss, 'U13_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']), 'Hannah');
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nJune 26, 2026:\n\u2022 Audrey (U11): BS 6/6 \u2713 \u00b7 ST 6/6 \u2713\n\u2022 Hannah (U13): BS 6/6 \u2713 \u00b7 ST 6/6 \u2713'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Hailey CDE June 26 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Adds a CDE entry for Hailey for June 26 (phone link issue)
+// Select fixHaileyJune26CDE in dropdown \u2192 click Run
+function fixHaileyJune26CDE() {
+  const ss  = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const now = new Date().toISOString();
+
+  const sheet = getOrCreate(ss, 'U13_CDE',
+    ['Player','Date','Entry ID','Activity Text','Updated']);
+  const rows   = sheet.getDataRange().getValues();
+  const date   = '2026-06-26';
+  const entryId = '20260626001'; // fixed unique ID for this entry
+
+  // Check if this entry already exists
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === 'Hailey' && String(rows[i][2]) === entryId) {
+      SpreadsheetApp.getUi().alert('\u26a0\ufe0f Entry already exists for Hailey on June 26. No changes made.');
+      return;
+    }
+  }
+
+  const newRow = sheet.getLastRow() + 1;
+  sheet.appendRow(['Hailey', date, entryId, 'Champions Do Extra \u2013 completed all activities (logged by coach; phone link issue)', now]);
+  sheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nHailey \u2192 June 26, 2026:\n\u2022 CDE entry added \u2713\n\u2022 Note: phone link issue logged by coach'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Ellie (U13) all days complete June 2 \u2013 July 1 \u2500\u2500
+// Marks all Ball Skills + Strength complete for every day in range
+// Select fixEllieAllDaysComplete in dropdown \u2192 click Run
+function fixEllieAllDaysComplete() {
+  const ss  = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const now = new Date().toISOString();
+  const bs  = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st  = 'st1,st2,st3,st4,st5,st6';
+
+  const dailySheet = getOrCreate(ss, 'U13_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+
+  // Build list of every date June 2 \u2192 July 1
+  const dates = [];
+  const start = new Date('2026-06-02');
+  const end   = new Date('2026-07-01');
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    dates.push(Utilities.formatDate(new Date(d), Session.getScriptTimeZone(), 'yyyy-MM-dd'));
+  }
+
+  let updated = 0, created = 0;
+
+  dates.forEach(function(date) {
+    const dRows = dailySheet.getDataRange().getValues();
+    let found = false;
+    for (let i = 1; i < dRows.length; i++) {
+      if (String(dRows[i][0]).trim() === 'Ellie' && fmtDate(dRows[i][1]) === date) {
+        // Merge: union existing with full set
+        const bsSet = new Set([...(dRows[i][2]?String(dRows[i][2]).split(',').filter(Boolean):[]),'bs1','bs2','bs3','bs4','bs5','bs6']);
+        const stSet = new Set([...(dRows[i][3]?String(dRows[i][3]).split(',').filter(Boolean):[]),'st1','st2','st3','st4','st5','st6']);
+        dailySheet.getRange(i+1,3,1,3).setValues([[Array.from(bsSet).join(','),Array.from(stSet).join(','),now]]);
+        found = true; updated++;
+        break;
+      }
+    }
+    if (!found) {
+      const newRow = dailySheet.getLastRow() + 1;
+      dailySheet.appendRow(['Ellie', date, bs, st, now]);
+      dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+      created++;
+    }
+  });
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nEllie (U13) \u2192 June 2 \u2013 July 1, 2026 (' + dates.length + ' days):\n\u2022 ' + updated + ' existing rows updated\n\u2022 ' + created + ' new rows created\n\u2022 All days: BS 6/6 \u2713 \u00b7 ST 6/6 \u2713'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Reese June 28 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// All Ball Skills + Strength + juggling 77 for June 28 (Sunday)
+// Select fixReeseJune28 in dropdown \u2192 click Run
+function fixReeseJune28() {
+  const ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const date = '2026-06-28';
+  const now  = new Date().toISOString();
+  const bs   = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st   = 'st1,st2,st3,st4,st5,st6';
+
+  // \u2500\u2500 Daily \u2500\u2500
+  const dailySheet = getOrCreate(ss, 'U13_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const dRows = dailySheet.getDataRange().getValues();
+  let found = false;
+  for (let i = 1; i < dRows.length; i++) {
+    if (String(dRows[i][0]).trim() === 'Reese' && fmtDate(dRows[i][1]) === date) {
+      const bsSet = new Set([...(dRows[i][2]?String(dRows[i][2]).split(',').filter(Boolean):[]),'bs1','bs2','bs3','bs4','bs5','bs6']);
+      const stSet = new Set([...(dRows[i][3]?String(dRows[i][3]).split(',').filter(Boolean):[]),'st1','st2','st3','st4','st5','st6']);
+      dailySheet.getRange(i+1,3,1,3).setValues([[Array.from(bsSet).join(','),Array.from(stSet).join(','),now]]);
+      found = true;
+      Logger.log('Updated Reese daily for ' + date);
+      break;
+    }
+  }
+  if (!found) {
+    const newRow = dailySheet.getLastRow() + 1;
+    dailySheet.appendRow(['Reese', date, bs, st, now]);
+    dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+    Logger.log('Created Reese daily row for ' + date);
+  }
+
+  // \u2500\u2500 Juggling \u2500\u2500
+  const jugSheet = getOrCreate(ss, 'U13_Juggling',
+    ['Player','Date','Juggle Count','Last Updated']);
+  const jRows = jugSheet.getDataRange().getValues();
+  let jugFound = false;
+  for (let i = 1; i < jRows.length; i++) {
+    if (String(jRows[i][0]).trim() === 'Reese' && fmtDate(jRows[i][1]) === date) {
+      jugSheet.getRange(i+1,3,1,2).setValues([[77, now]]);
+      jugFound = true;
+      Logger.log('Updated Reese juggling for ' + date);
+      break;
+    }
+  }
+  if (!jugFound) {
+    const newRow = jugSheet.getLastRow() + 1;
+    jugSheet.appendRow(['Reese', date, 77, now]);
+    jugSheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+    Logger.log('Created Reese juggling row for ' + date);
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nReese \u2192 Sunday June 28, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength: 6/6 \u2713\n\u2022 Juggling: 77 \u2713'
+  );
+}
