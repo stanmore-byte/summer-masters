@@ -1068,3 +1068,212 @@ function fixReeseJune28() {
     '\u2705 Done!\n\nReese \u2192 Sunday June 28, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength: 6/6 \u2713\n\u2022 Juggling: 77 \u2713'
   );
 }
+
+// \u2500\u2500 ONE-TIME FIX: Hannah (U13) July 2 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Sets all Ball Skills + Strength Training complete for Thursday July 2
+// Select fixHannahJuly2 in dropdown \u2192 click Run
+function fixHannahJuly2() {
+  const ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const date = '2026-07-02';
+  const now  = new Date().toISOString();
+
+  const dailySheet = getOrCreate(ss, 'U13_Daily',
+    ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const dRows = dailySheet.getDataRange().getValues();
+  let found = false;
+  for (let i = 1; i < dRows.length; i++) {
+    if (String(dRows[i][0]).trim() === 'Hannah' && fmtDate(dRows[i][1]) === date) {
+      const bsSet = new Set([...(dRows[i][2]?String(dRows[i][2]).split(',').filter(Boolean):[]),'bs1','bs2','bs3','bs4','bs5','bs6']);
+      const stSet = new Set([...(dRows[i][3]?String(dRows[i][3]).split(',').filter(Boolean):[]),'st1','st2','st3','st4','st5','st6']);
+      dailySheet.getRange(i+1,3,1,3).setValues([[Array.from(bsSet).join(','),Array.from(stSet).join(','),now]]);
+      found = true;
+      Logger.log('Updated Hannah for ' + date);
+      break;
+    }
+  }
+  if (!found) {
+    const newRow = dailySheet.getLastRow() + 1;
+    dailySheet.appendRow(['Hannah', date, 'bs1,bs2,bs3,bs4,bs5,bs6', 'st1,st2,st3,st4,st5,st6', now]);
+    dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+    Logger.log('Created Hannah row for ' + date);
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nHannah (U13) \u2192 Thursday July 2, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength Training: 6/6 \u2713'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Audrey (U11) July 3 \u00b7 Hannah (U13) July 6 \u00b7 Marie (U13) June 26 \u2500\u2500
+// Select fixAudreyJuly3_HannahJuly6_MarieJune26 in dropdown \u2192 click Run
+function fixAudreyJuly3_HannahJuly6_MarieJune26() {
+  const ss  = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const now = new Date().toISOString();
+  const bs  = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st  = 'st1,st2,st3,st4,st5,st6';
+
+  function upsertDaily(sheet, player, date) {
+    const dRows = sheet.getDataRange().getValues();
+    for (let i = 1; i < dRows.length; i++) {
+      if (String(dRows[i][0]).trim() === player && fmtDate(dRows[i][1]) === date) {
+        const bsSet = new Set([...(dRows[i][2]?String(dRows[i][2]).split(',').filter(Boolean):[]),'bs1','bs2','bs3','bs4','bs5','bs6']);
+        const stSet = new Set([...(dRows[i][3]?String(dRows[i][3]).split(',').filter(Boolean):[]),'st1','st2','st3','st4','st5','st6']);
+        sheet.getRange(i+1,3,1,3).setValues([[Array.from(bsSet).join(','),Array.from(stSet).join(','),now]]);
+        Logger.log('Updated ' + player + ' for ' + date);
+        return;
+      }
+    }
+    const newRow = sheet.getLastRow() + 1;
+    sheet.appendRow([player, date, bs, st, now]);
+    sheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+    Logger.log('Created ' + player + ' row for ' + date);
+  }
+
+  const u11 = getOrCreate(ss, 'U11_Daily', ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const u13 = getOrCreate(ss, 'U13_Daily', ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+
+  upsertDaily(u11, 'Audrey',  '2026-07-03');
+  upsertDaily(u13, 'Hannah',  '2026-07-06');
+  upsertDaily(u13, 'Marie',   '2026-06-26');
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\n\u2022 Audrey (U11) \u2192 Fri Jul 3: BS 6/6 \u2713 \u00b7 ST 6/6 \u2713\n\u2022 Hannah (U13) \u2192 Mon Jul 6: BS 6/6 \u2713 \u00b7 ST 6/6 \u2713\n\u2022 Marie (U13) \u2192 Fri Jun 26: BS 6/6 \u2713 \u00b7 ST 6/6 \u2713'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Reese (U13) July 6 \u2014 all complete + 73 juggles \u2500\u2500
+// Logged from iPad but not syncing. Select fixReeseJuly6 \u2192 Run
+function fixReeseJuly6() {
+  const ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const now  = new Date().toISOString();
+  const date = '2026-07-06';
+  const bs   = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st   = 'st1,st2,st3,st4,st5,st6';
+
+  // \u2500\u2500 U13_Daily \u2500\u2500
+  const dailySheet = getOrCreate(ss, 'U13_Daily', ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const dRows = dailySheet.getDataRange().getValues();
+  let found = false;
+  for (let i = 1; i < dRows.length; i++) {
+    if (String(dRows[i][0]).trim() === 'Reese' && fmtDate(dRows[i][1]) === date) {
+      const bsSet = new Set([...(dRows[i][2]?String(dRows[i][2]).split(',').filter(Boolean):[]),'bs1','bs2','bs3','bs4','bs5','bs6']);
+      const stSet = new Set([...(dRows[i][3]?String(dRows[i][3]).split(',').filter(Boolean):[]),'st1','st2','st3','st4','st5','st6']);
+      dailySheet.getRange(i+1,3,1,3).setValues([[Array.from(bsSet).join(','),Array.from(stSet).join(','),now]]);
+      found = true; break;
+    }
+  }
+  if (!found) {
+    const newRow = dailySheet.getLastRow() + 1;
+    dailySheet.appendRow(['Reese', date, bs, st, now]);
+    dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+  }
+
+  // \u2500\u2500 U13_Juggling \u2500\u2500
+  const jugSheet = getOrCreate(ss, 'U13_Juggling', ['Player','Date','Count','Last Updated']);
+  const jRows = jugSheet.getDataRange().getValues();
+  let jFound = false;
+  for (let i = 1; i < jRows.length; i++) {
+    if (String(jRows[i][0]).trim() === 'Reese' && fmtDate(jRows[i][1]) === date) {
+      jugSheet.getRange(i+1,3,1,2).setValues([[73, now]]);
+      jFound = true; break;
+    }
+  }
+  if (!jFound) {
+    const newRow = jugSheet.getLastRow() + 1;
+    jugSheet.appendRow(['Reese', date, 73, now]);
+    jugSheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nReese (U13) \u2192 Mon Jul 6, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength Training: 6/6 \u2713\n\u2022 Juggles: 73 \u2713'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Reese (U13) July 7 \u2014 all complete + 73 juggles \u2500\u2500
+function fixReeseJuly7() {
+  const ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const now  = new Date().toISOString();
+  const date = '2026-07-07';
+  const bs   = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st   = 'st1,st2,st3,st4,st5,st6';
+
+  const dailySheet = getOrCreate(ss, 'U13_Daily', ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const dRows = dailySheet.getDataRange().getValues();
+  let found = false;
+  for (let i = 1; i < dRows.length; i++) {
+    if (String(dRows[i][0]).trim() === 'Reese' && fmtDate(dRows[i][1]) === date) {
+      const bsSet = new Set([...(dRows[i][2]?String(dRows[i][2]).split(',').filter(Boolean):[]),'bs1','bs2','bs3','bs4','bs5','bs6']);
+      const stSet = new Set([...(dRows[i][3]?String(dRows[i][3]).split(',').filter(Boolean):[]),'st1','st2','st3','st4','st5','st6']);
+      dailySheet.getRange(i+1,3,1,3).setValues([[Array.from(bsSet).join(','),Array.from(stSet).join(','),now]]);
+      found = true; break;
+    }
+  }
+  if (!found) {
+    const newRow = dailySheet.getLastRow() + 1;
+    dailySheet.appendRow(['Reese', date, bs, st, now]);
+    dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+  }
+
+  const jugSheet = getOrCreate(ss, 'U13_Juggling', ['Player','Date','Count','Last Updated']);
+  const jRows = jugSheet.getDataRange().getValues();
+  let jFound = false;
+  for (let i = 1; i < jRows.length; i++) {
+    if (String(jRows[i][0]).trim() === 'Reese' && fmtDate(jRows[i][1]) === date) {
+      jugSheet.getRange(i+1,3,1,2).setValues([[73, now]]);
+      jFound = true; break;
+    }
+  }
+  if (!jFound) {
+    const newRow = jugSheet.getLastRow() + 1;
+    jugSheet.appendRow(['Reese', date, 73, now]);
+    jugSheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nReese (U13) \u2192 Tue Jul 7, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength Training: 6/6 \u2713\n\u2022 Juggles: 73 \u2713'
+  );
+}
+
+// \u2500\u2500 ONE-TIME FIX: Aria (U13) July 7 \u2014 all complete + 7 juggles \u2500\u2500
+function fixAriaJuly7() {
+  const ss   = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const now  = new Date().toISOString();
+  const date = '2026-07-07';
+  const bs   = 'bs1,bs2,bs3,bs4,bs5,bs6';
+  const st   = 'st1,st2,st3,st4,st5,st6';
+
+  const dailySheet = getOrCreate(ss, 'U13_Daily', ['Player','Date','Ball Skills Checked (IDs)','Strength Checked (IDs)','Last Updated']);
+  const dRows = dailySheet.getDataRange().getValues();
+  let found = false;
+  for (let i = 1; i < dRows.length; i++) {
+    if (String(dRows[i][0]).trim() === 'Aria' && fmtDate(dRows[i][1]) === date) {
+      const bsSet = new Set([...(dRows[i][2]?String(dRows[i][2]).split(',').filter(Boolean):[]),'bs1','bs2','bs3','bs4','bs5','bs6']);
+      const stSet = new Set([...(dRows[i][3]?String(dRows[i][3]).split(',').filter(Boolean):[]),'st1','st2','st3','st4','st5','st6']);
+      dailySheet.getRange(i+1,3,1,3).setValues([[Array.from(bsSet).join(','),Array.from(stSet).join(','),now]]);
+      found = true; break;
+    }
+  }
+  if (!found) {
+    const newRow = dailySheet.getLastRow() + 1;
+    dailySheet.appendRow(['Aria', date, bs, st, now]);
+    dailySheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+  }
+
+  const jugSheet = getOrCreate(ss, 'U13_Juggling', ['Player','Date','Count','Last Updated']);
+  const jRows = jugSheet.getDataRange().getValues();
+  let jFound = false;
+  for (let i = 1; i < jRows.length; i++) {
+    if (String(jRows[i][0]).trim() === 'Aria' && fmtDate(jRows[i][1]) === date) {
+      jugSheet.getRange(i+1,3,1,2).setValues([[7, now]]);
+      jFound = true; break;
+    }
+  }
+  if (!jFound) {
+    const newRow = jugSheet.getLastRow() + 1;
+    jugSheet.appendRow(['Aria', date, 7, now]);
+    jugSheet.getRange(newRow, 2).setNumberFormat('@STRING@');
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '\u2705 Done!\n\nAria (U13) \u2192 Tue Jul 7, 2026:\n\u2022 Ball Skills: 6/6 \u2713\n\u2022 Strength Training: 6/6 \u2713\n\u2022 Juggles: 7 \u2713'
+  );
+}
