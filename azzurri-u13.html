@@ -228,11 +228,32 @@ try {
 }
 
 // ── ROSTER ───────────────────────────────────────────────────────────
-const ROSTER = ['Baylor','Charlotte','Ellie','Hailey','Hannah','Madi','Marie','Myra','Reese'];
-const COLORS = ['#7C3AED','#2563EB','#DC2626','#D97706','#16A34A','#0891B2','#BE185D','#EA580C','#4F46E5'];
+const ROSTER = [
+  {name:'Baylor',   jersey:'21'},
+  {name:'Camryn',   jersey:'4'},
+  {name:'Caroline', jersey:'18'},
+  {name:'Charlotte',jersey:'6'},
+  {name:'Ellie',    jersey:'11'},
+  {name:'Hailey',   jersey:'27'},
+  {name:'Hannah',   jersey:'7'},
+  {name:'Kaia',     jersey:'17'},
+  {name:'London',   jersey:''},
+  {name:'Mady',     jersey:''},
+  {name:'Marie',    jersey:''},
+  {name:'Melissa',  jersey:''},
+  {name:'Myra',     jersey:''},
+  {name:'Noelle',   jersey:'33'},
+  {name:'Reese',    jersey:'16'},
+  {name:'Susie',    jersey:''},
+];
+const COLORS = ['#7C3AED','#2563EB','#DC2626','#D97706','#16A34A','#0891B2','#BE185D','#EA580C','#4F46E5',
+                 '#7C3AED','#2563EB','#DC2626','#D97706','#16A34A','#0891B2','#BE185D'];
 
 // ── STATE ────────────────────────────────────────────────────────────
 let player     = localStorage.getItem('az13_player') || null;
+// Normalize legacy spellings
+if (player === 'Madi') { player = 'Mady'; localStorage.setItem('az13_player','Mady'); }
+if (player === 'Susanna') { player = 'Susie'; localStorage.setItem('az13_player','Susie'); }
 let today      = new Date().toLocaleDateString('en-CA');
 let assignment = null;
 let checked    = new Set();
@@ -240,13 +261,13 @@ let saveTimer  = null;
 
 // ── BUILD PLAYER GRID ─────────────────────────────────────────────────
 const grid = document.getElementById('player-grid');
-ROSTER.forEach((name, i) => {
-  const initials = name.slice(0,2).toUpperCase();
+ROSTER.forEach((p, i) => {
   const col = COLORS[i % COLORS.length];
+  const badge = p.jersey ? `#${p.jersey}` : p.name.slice(0,2).toUpperCase();
   const div = document.createElement('div');
   div.className = 'pc';
-  div.innerHTML = `<div class="pc-av" style="background:${col}">${initials}</div><div class="pc-name">${name}</div>`;
-  div.onclick = () => login(name);
+  div.innerHTML = `<div class="pc-av" style="background:${col}">${badge}</div><div class="pc-name">${p.name}</div>`;
+  div.onclick = () => login(p.name);
   grid.appendChild(div);
 });
 
