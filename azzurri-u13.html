@@ -29,15 +29,18 @@ input,textarea,select,button{-webkit-appearance:none;font-family:inherit}
 .player-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:360px}
 .pc{border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;background:rgba(255,255,255,.06)}
 .pc:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.1)}
-.pc-av-wrap{position:relative;width:60px;height:60px;margin:0 auto 9px}
-.pc-av-wrap svg{position:absolute;top:0;left:0;width:60px;height:60px;transform:rotate(-90deg)}
+.pc-av-wrap{position:relative;width:64px;height:64px;margin:0 auto 9px}
+.pc-av-wrap svg{position:absolute;top:0;left:0;width:64px;height:64px;transform:rotate(-90deg)}
 .pc-av-wrap svg .ring-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:3}
 .pc-av-wrap svg .ring-fill{fill:none;stroke:#3b82f6;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
-.pc-av-wrap svg .ring-fill.done{stroke:#27ae60}
-.pc-av{width:52px;height:52px;border-radius:50%;position:absolute;top:4px;left:4px;display:flex;align-items:center;justify-content:center;font-size:1.1em;font-weight:900;color:#fff}
-.pc-check{position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;background:#27ae60;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid #0d1b2a;font-size:9px}
-.pc-av-wrap.all-done .pc-check{display:flex}
-.pc-name-row{display:flex;align-items:center;justify-content:center;gap:5px}
+.pc-av{width:52px;height:52px;border-radius:50%;position:absolute;top:6px;left:6px;display:flex;align-items:center;justify-content:center;font-size:1.1em;font-weight:900;color:#fff;transition:box-shadow .4s}
+/* CDE complete state */
+.pc-av-wrap.cde-done .pc-av{border:2px solid #FFD700;box-shadow:0 0 10px 3px rgba(255,215,0,.65),0 0 22px 6px rgba(255,215,0,.3)}
+.pc-av-wrap.cde-done svg{display:none}
+.pc-cde-badge{display:none;font-size:.58em;font-weight:900;letter-spacing:.12em;color:#FFD700;text-shadow:0 0 6px rgba(255,215,0,.7);margin-top:1px}
+.pc-av-wrap.cde-done~.pc-name-row .pc-cde-badge{display:inline}
+.pc-name-row{display:flex;flex-direction:column;align-items:center;gap:1px}
+.pc-name-juggle{display:flex;align-items:center;justify-content:center;gap:5px}
 .pc-name{font-weight:800;font-size:.9em}
 .pc-juggles{font-size:.7em;font-weight:700;color:#FFD700;opacity:.85}
 
@@ -271,29 +274,30 @@ let saveTimer  = null;
 
 // ── BUILD PLAYER GRID ─────────────────────────────────────────────────
 const grid = document.getElementById('player-grid');
-const CIRC = 2 * Math.PI * 27; // circumference for r=27
+const CIRC = 2 * Math.PI * 29; // circumference for r=29 (64px viewBox)
 
-function buildGrid(progressMap, juggleMap) {
+function buildGrid(progressMap, juggleMap, cdeSet) {
   grid.innerHTML = '';
   ROSTER.forEach((p, i) => {
     const col = COLORS[i % COLORS.length];
     const badge = p.jersey ? `#${p.jersey}` : p.name.slice(0,2).toUpperCase();
-    const pct = progressMap[p.name] || 0; // 0.0–1.0
+    const pct = progressMap[p.name] || 0;
     const juggles = juggleMap[p.name] || 0;
+    const isDone = cdeSet && cdeSet.has(p.name);
     const offset = CIRC * (1 - pct);
-    const allDone = pct >= 1;
-    const strokeColor = allDone ? '#27ae60' : '#3b82f6';
     const div = document.createElement('div');
     div.className = 'pc';
     div.innerHTML = `
-      <div class="pc-av-wrap${allDone ? ' all-done' : ''}">
-        <svg viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="27"/><circle class="ring-fill${allDone?' done':''}" cx="30" cy="30" r="27" stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}" stroke="${strokeColor}"/></svg>
+      <div class="pc-av-wrap${isDone ? ' cde-done' : ''}">
+        <svg viewBox="0 0 64 64"><circle class="ring-bg" cx="32" cy="32" r="29"/><circle class="ring-fill" cx="32" cy="32" r="29" stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}"/></svg>
         <div class="pc-av" style="background:${col}">${badge}</div>
-        <div class="pc-check">✓</div>
       </div>
       <div class="pc-name-row">
-        <div class="pc-name">${p.name}</div>
-        ${juggles ? `<div class="pc-juggles">${juggles}🏅</div>` : ''}
+        <div class="pc-name-juggle">
+          <div class="pc-name">${p.name}</div>
+          ${juggles ? `<div class="pc-juggles">${juggles}🏅</div>` : ''}
+        </div>
+        ${isDone ? `<div class="pc-cde-badge">⚡ CDE</div>` : ''}
       </div>`;
     div.onclick = () => login(p.name);
     grid.appendChild(div);
@@ -308,27 +312,30 @@ function showLogin() {
   document.getElementById('screen-login').classList.add('active');
   document.getElementById('screen-main').style.display = 'none';
   // Load team progress for today
-  buildGrid({}, {});
+  buildGrid({}, {}, new Set());
   (async () => {
     try {
       const todayStr = new Date().toLocaleDateString('en-CA');
-      const [dailyRes, juggleRes, asgRes] = await Promise.all([
-        db.from('daily_logs').select('player,ball_skills,strength').eq('team','u13').eq('date',todayStr),
+      const [compRes, juggleRes, asgRes] = await Promise.all([
+        db.from('homework_completions').select('player,completed_items,film_notes').eq('team','u13').eq('date',todayStr),
         db.from('juggling_logs').select('player,count').eq('team','u13').eq('date',todayStr),
-        db.from('assignments').select('items').eq('team','u13').eq('date',todayStr).maybeSingle()
+        db.from('assignments').select('sections').eq('team','u13').eq('date',todayStr).maybeSingle()
       ]);
-      // Figure out total checkable items
-      const items = asgRes.data?.items || [];
-      const totalItems = items.reduce((n, s) => n + (s.activities ? s.activities.length : (s.type==='juggling'?0:1)), 0) || 12;
+      // Total checkable items (including film review)
+      const sections = asgRes.data?.sections || [];
+      const totalItems = getCheckableIds(sections).length || 14;
       const progressMap = {};
-      (dailyRes.data || []).forEach(row => {
-        const bs = (row.ball_skills || []).length;
-        const st = (row.strength || []).length;
-        progressMap[row.player] = Math.min((bs + st) / totalItems, 1);
+      const cdeSet = new Set();
+      (compRes.data || []).forEach(row => {
+        const done = (row.completed_items || []).length;
+        const filmDone = !!(row.film_notes?.trim());
+        const fullDone = done + (filmDone ? 1 : 0);
+        progressMap[row.player] = Math.min(fullDone / totalItems, 1);
+        if (fullDone >= totalItems) cdeSet.add(row.player);
       });
       const juggleMap = {};
       (juggleRes.data || []).forEach(row => { juggleMap[row.player] = row.count; });
-      buildGrid(progressMap, juggleMap);
+      buildGrid(progressMap, juggleMap, cdeSet);
     } catch(e) { /* leave grid as-is */ }
   })();
 }
