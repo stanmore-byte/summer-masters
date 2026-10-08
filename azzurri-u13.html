@@ -180,6 +180,7 @@ input,textarea,select,button{-webkit-appearance:none;font-family:inherit}
     <div class="tab-btn active" data-tab="today" onclick="switchTab('today')">Today</div>
     <div class="tab-btn" data-tab="juggling" onclick="switchTab('juggling')">Juggling</div>
     <div class="tab-btn" data-tab="history" onclick="switchTab('history')">History</div>
+    <div class="tab-btn" onclick="viewTeam()" style="color:#7fbfff">Team 👥</div>
   </div>
 
   <!-- TODAY -->
@@ -338,6 +339,11 @@ function login(name) {
   showMain();
 }
 
+function viewTeam() {
+  document.getElementById('screen-main').style.display = 'none';
+  showLogin();
+}
+
 function logout() {
   localStorage.removeItem('az13_player');
   player = null;
@@ -394,6 +400,9 @@ function renderToday(comp) {
 
   const sections = assignment.sections || [];
   const allIds = getCheckableIds(sections);
+  // Seed __film__ into checked if film notes already exist
+  if (comp?.film_notes?.trim()) checked.add('__film__');
+  else checked.delete('__film__');
   const total = allIds.length;
   const done = allIds.filter(id => checked.has(id)).length;
   const pct = total ? Math.round((done/total)*100) : 0;
@@ -402,7 +411,7 @@ function renderToday(comp) {
   let html = '';
 
   if (allDone) {
-    html += `<div class="done-banner"><span>🏆</span><p>Assignment complete — Champions Do Extra!</p></div>`;
+    html += `<div class="done-banner"><span>🏆</span><p>Assignment complete — <s style="opacity:.45">Champions</s> <strong style="color:#FFD700">${esc(player)}</strong> Does Extra!</p></div>`;
   }
 
   // Main assignment card
@@ -418,31 +427,37 @@ function renderToday(comp) {
     </div>` : ''}`;
 
   sections.forEach(sec => {
+    const secLabel = stripNum(sec.label);
     if (sec.has_notes) {
-      // Film review
+      // Film review — counts as __film__ checkbox
       const notes = comp?.film_notes || '';
-      html += `<div class="section-hdr"><span class="section-name">${esc(sec.label)}</span></div>
+      const filmChecked = checked.has('__film__');
+      html += `<div class="section-hdr"><span class="section-name">${esc(secLabel)}</span></div>
         <p class="film-prompt">Write 3 things you did well and 3 to improve. Coach Will asks each player individually.</p>
         <textarea class="film-ta" id="film-ta" placeholder="Three things I did well:&#10;1. &#10;2. &#10;3. &#10;&#10;Three things to improve:&#10;1. &#10;2. &#10;3."
-          onblur="schedSave()">${esc(notes)}</textarea>`;
+          onblur="schedSave();toggleFilm()">${esc(notes)}</textarea>`;
     } else if (!sec.items || sec.items.length === 0) {
-      // Single-checkbox section
+      // Single-checkbox section — show a section header then a Done checkbox
       const isChecked = checked.has(sec.id);
-      html += `<div class="check-row section-row${isChecked?' checked':''}" onclick="toggle('${sec.id}',this)">
+      html += `<div class="section-hdr">
+        <span class="section-name">${esc(secLabel)}</span>
+        ${sec.duration ? `<span class="section-dur">${esc(sec.duration)}</span>` : ''}
+      </div>
+      <div class="check-row section-row${isChecked?' checked':''}" onclick="toggle('${sec.id}',this)">
         <div class="cb-box"><div class="cb-tick"></div></div>
-        <div class="cb-label">${esc(sec.label)}${sec.duration ? ` <span style="font-size:.75em;opacity:.45;font-weight:600">${esc(sec.duration)}</span>` : ''}</div>
+        <div class="cb-label">Done</div>
       </div>`;
     } else {
       // Section with sub-items
       html += `<div class="section-hdr">
-        <span class="section-name">${esc(sec.label)}</span>
+        <span class="section-name">${esc(secLabel)}</span>
         ${sec.duration ? `<span class="section-dur">${esc(sec.duration)}</span>` : ''}
       </div>`;
       sec.items.forEach(item => {
         const isChecked = checked.has(item.id);
         html += `<div class="check-row${isChecked?' checked':''}" onclick="toggle('${item.id}',this)">
           <div class="cb-box"><div class="cb-tick"></div></div>
-          <div class="cb-label">${esc(item.label)}</div>
+          <div class="cb-label">${esc(stripNum(item.label))}</div>
         </div>`;
       });
     }
@@ -452,10 +467,15 @@ function renderToday(comp) {
   el.innerHTML = html;
 }
 
+// Strip leading numbering like "1--", "2·", "3.", "4 -" from labels
+function stripNum(label) {
+  return (label || '').replace(/^\d+[\s]*[-–·\.]+[\s]*/,'').trim();
+}
+
 function getCheckableIds(sections) {
   const ids = [];
   sections.forEach(s => {
-    if (s.has_notes) return;
+    if (s.has_notes) { ids.push('__film__'); return; }
     if (!s.items || s.items.length === 0) ids.push(s.id);
     else s.items.forEach(it => ids.push(it.id));
   });
@@ -474,16 +494,28 @@ function toggle(id, row) {
   schedSave();
 }
 
+function toggleFilm() {
+  const ta = document.getElementById('film-ta');
+  if (ta && ta.value.trim()) checked.add('__film__');
+  else checked.delete('__film__');
+  updateProgress();
+  schedSave();
+}
+
 function updateProgress() {
   if (!assignment) return;
-  const allIds = getCheckableIds(assignment.sections || []);
+  const sections = assignment.sections || [];
+  const allIds = getCheckableIds(sections);
   const total = allIds.length;
   const done = allIds.filter(id => checked.has(id)).length;
+  const allDone = total > 0 && done === total;
   const pct = total ? Math.round((done/total)*100) : 0;
   const fill = document.querySelector('.prog-fill');
-  if (fill) { fill.style.width = pct + '%'; fill.classList.toggle('done', done === total); }
+  if (fill) { fill.style.width = pct + '%'; fill.classList.toggle('done', allDone); }
   const lbl = document.querySelector('.prog-label');
   if (lbl) lbl.textContent = `${done}/${total}`;
+  const banner = document.querySelector('.done-banner');
+  if (banner) banner.style.display = allDone ? 'flex' : 'none';
 }
 
 function schedSave() {
