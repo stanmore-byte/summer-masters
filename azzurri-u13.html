@@ -418,7 +418,7 @@ function renderToday(comp) {
   let html = '';
 
   if (allDone) {
-    html += `<div class="done-banner"><span>🏆</span><p>Assignment complete — <s style="opacity:.45">Champions</s> <strong style="color:#FFD700">${esc(player)}</strong> Does Extra!</p></div>`;
+    html += `<div class="done-banner"><span>🏆</span><p>Assignment complete — <s style="opacity:.45">Champions</s> <strong style="color:#FFD700">${esc(player)}</strong> Did Extra!</p></div>`;
   }
 
   // Main assignment card
@@ -442,7 +442,10 @@ function renderToday(comp) {
       html += `<div class="section-hdr"><span class="section-name">${esc(secLabel)}</span></div>
         <p class="film-prompt">Write 3 things you did well and 3 to improve.</p>
         <textarea class="film-ta" id="film-ta" placeholder="Three things I did well:&#10;1. &#10;2. &#10;3. &#10;&#10;Three things to improve:&#10;1. &#10;2. &#10;3."
-          onblur="schedSave();toggleFilm()">${esc(notes)}</textarea>`;
+          ${notes ? 'disabled style="opacity:.45"' : ''}>${esc(notes)}</textarea>
+        <div style="padding:0 14px 14px">
+          <button id="film-btn" onclick="submitFilm()" style="width:100%;padding:10px;border-radius:10px;border:none;font-size:.9em;font-weight:800;letter-spacing:.06em;cursor:pointer;transition:all .2s;background:${notes?'rgba(255,255,255,.1)':'#FFD700'};color:${notes?'rgba(255,255,255,.55)':'#0d1b2a'}">${notes ? 'Edit' : 'Submit'}</button>
+        </div>`;
     } else if (!sec.items || sec.items.length === 0) {
       // Single-checkbox section — show a section header then a Done checkbox
       const isChecked = checked.has(sec.id);
@@ -506,7 +509,31 @@ function toggleFilm() {
   if (ta && ta.value.trim()) checked.add('__film__');
   else checked.delete('__film__');
   updateProgress();
-  schedSave();
+}
+
+function submitFilm() {
+  const ta = document.getElementById('film-ta');
+  const btn = document.getElementById('film-btn');
+  if (!ta || !btn) return;
+  if (ta.disabled) {
+    // Switch to Edit mode
+    ta.disabled = false;
+    ta.style.opacity = '1';
+    btn.textContent = 'Submit';
+    btn.style.background = '#FFD700';
+    btn.style.color = '#0d1b2a';
+    ta.focus();
+  } else {
+    if (!ta.value.trim()) { showToast('Write something first!'); return; }
+    ta.disabled = true;
+    ta.style.opacity = '.45';
+    btn.textContent = 'Edit';
+    btn.style.background = 'rgba(255,255,255,.1)';
+    btn.style.color = 'rgba(255,255,255,.55)';
+    checked.add('__film__');
+    updateProgress();
+    saveComp();
+  }
 }
 
 function updateProgress() {
