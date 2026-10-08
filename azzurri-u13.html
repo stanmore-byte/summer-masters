@@ -275,6 +275,7 @@ function logout() {
 function showMain() {
   document.getElementById('screen-login').classList.remove('active');
   const main = document.getElementById('screen-main');
+  main.classList.remove('hidden');
   main.style.display = 'flex';
   document.getElementById('ah-player-name').textContent = player;
   loadToday();
