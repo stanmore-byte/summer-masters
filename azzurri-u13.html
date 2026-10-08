@@ -440,7 +440,7 @@ function renderToday(comp) {
       const notes = comp?.film_notes || '';
       const filmChecked = checked.has('__film__');
       html += `<div class="section-hdr"><span class="section-name">${esc(secLabel)}</span></div>
-        <p class="film-prompt">Write 3 things you did well and 3 to improve. Coach Will asks each player individually.</p>
+        <p class="film-prompt">Write 3 things you did well and 3 to improve.</p>
         <textarea class="film-ta" id="film-ta" placeholder="Three things I did well:&#10;1. &#10;2. &#10;3. &#10;&#10;Three things to improve:&#10;1. &#10;2. &#10;3."
           onblur="schedSave();toggleFilm()">${esc(notes)}</textarea>`;
     } else if (!sec.items || sec.items.length === 0) {
