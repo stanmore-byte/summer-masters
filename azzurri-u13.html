@@ -526,7 +526,6 @@ function submitFilm() {
     btn.style.color = '#fff';
     checked.delete('__film__');
     updateProgress();
-    saveComp();
     ta.focus();
   } else {
     if (!ta.value.trim()) { showToast('Write something first!'); return; }
