@@ -28,9 +28,8 @@ input,textarea,select,button{-webkit-appearance:none;font-family:inherit}
 
 .player-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:360px}
 .pc{border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;background:rgba(255,255,255,.06);position:relative}
-.pc-fern{display:none;position:absolute;top:-10px;right:-10px;width:30px;height:30px;border-radius:50%;background:rgba(8,16,28,.95);border:2px solid rgba(200,215,225,.65);box-shadow:0 0 8px 2px rgba(190,208,222,.45);padding:3px;z-index:10}
-.pc-fern img{width:100%;height:100%;object-fit:contain;filter:brightness(1.3) saturate(0) contrast(1.2)}
-.pc.cde-done .pc-fern{display:block}
+.pc-fern{display:none;position:absolute;top:-10px;right:-10px;width:30px;height:30px;border-radius:50%;background:rgba(8,16,28,.97);border:2px solid rgba(200,215,225,.75);box-shadow:0 0 10px 3px rgba(190,208,222,.55);z-index:10;align-items:center;justify-content:center}
+.pc.cde-done .pc-fern{display:flex}
 .pc:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.1)}
 .pc-av-wrap{position:relative;width:64px;height:64px;margin:0 auto 9px}
 .pc-av-wrap svg{position:absolute;top:0;left:0;width:64px;height:64px;transform:rotate(-90deg)}
@@ -174,13 +173,12 @@ input,textarea,select,button{-webkit-appearance:none;font-family:inherit}
 <div id="screen-main" class="screen hidden" style="display:none">
 
   <div class="app-hdr">
-    <img class="ah-logo" src="CDE Silver Fern Logo.png" alt="" onerror="this.style.display='none'">
-    <div class="ah-titles">
+    <button class="btn-ghost" onclick="viewTeam()" style="border-color:rgba(139,92,246,.5);color:#8B5CF6;font-size:.68em;letter-spacing:.04em;flex-shrink:0">👥 TEAM</button>
+    <div class="ah-titles" style="text-align:center;flex:1">
       <div class="ah-name" id="ah-player-name">—</div>
       <div class="ah-sub">Champions Do Extra</div>
     </div>
-    <button class="btn-ghost" onclick="viewTeam()" style="border-color:rgba(139,92,246,.5);color:#8B5CF6;font-size:.68em;letter-spacing:.04em;margin-right:6px">👥 TEAM</button>
-    <button class="btn-ghost" onclick="logout()">Switch ✕</button>
+    <button class="btn-ghost" onclick="logout()" style="flex-shrink:0">Switch ✕</button>
   </div>
 
   <div class="tab-bar">
@@ -291,7 +289,7 @@ function buildGrid(progressMap, juggleMap, cdeSet) {
     const div = document.createElement('div');
     div.className = `pc${isDone ? ' cde-done' : ''}`;
     div.innerHTML = `
-      <div class="pc-fern"><img src="CDE Silver Fern Logo.png" alt="✓"></div>
+      <div class="pc-fern"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1C8 1 5 4 4 6.5C3.5 8 4 9.5 5 10.5L6.5 12L7 15L8 13L9 15L9.5 12L11 10.5C12 9.5 12.5 8 12 6.5C11 4 8 1 8 1Z" fill="#c8d8e8" opacity="0.9"/><path d="M8 5L7 8H9L8 5Z" fill="rgba(8,16,28,.5)"/><line x1="8" y1="10" x2="8" y2="15" stroke="#c8d8e8" stroke-width="1.5" stroke-linecap="round"/></svg></div>
       <div class="pc-av-wrap${isDone ? ' cde-done' : ''}">
         <svg viewBox="0 0 64 64"><circle class="ring-bg" cx="32" cy="32" r="29"/><circle class="ring-fill" cx="32" cy="32" r="29" stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}"/></svg>
         <div class="pc-av" style="background:${col}">${badge}</div>
